@@ -2,8 +2,7 @@ version: '2'
 
 services:
     web:
-        #image: php:7.1-apache
-        image: lamp_v7
+        build: .
         ports:
             - "80:80"
         volumes:
@@ -15,13 +14,15 @@ services:
         environment:
             - TZ=Europe/Paris
     db:
-        image: mysql:5.5
+        image: mysql:8.0
+        command: --default-authentication-plugin=mysql_native_password
         volumes:
             - ./mysql:/var/lib/mysql
         ports:
             - "3306:3306"
         environment:
             - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=topseven
     myadmin:
         image: phpmyadmin/phpmyadmin
         ports:
