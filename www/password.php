@@ -3,6 +3,17 @@
 	include("common.inc");
 
 	init_sql();
+
+	// CSRF Protection (Phase 1, Task 1.1.2) - Validate only if form is submitted
+	if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token']))) {
+		error_log('CSRF token validation failed in password.php');
+		session_start();
+		print_header_password();
+		$action = "password";
+		put_password_form( $action);
+		exit;
+	}
+
 	$email 	= 0;
 	if( isset( $_POST['email'])) 	$email = $_POST['email'];
 	if( $email) {

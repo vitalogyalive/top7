@@ -24,6 +24,12 @@ if (file_exists($ovh_path)) {
 }
 // blank page is displayed if file not found
 
+// Load PasswordService for modern password hashing (Phase 1, Task 1.1.1)
+require_once __DIR__ . '/src/Auth/PasswordService.php';
+
+// Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
+require_once __DIR__ . '/src/Security/CsrfToken.php';
+
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
 define("c_one", 1);
@@ -248,28 +254,31 @@ $f_debugs = array(
     "stats",
     "register_same_top7team");
 
+/**
+ * Print version info - Legacy wrapper for Logger::printVersion()
+ * @deprecated Use \Top7\Utils\Logger::printVersion() instead
+ */
 function print_version()
 {
-
-    echo "<div id=\"footer\">\n";
-    echo "&copy; " . c_copyright . " - <a href=\"" . c_url_github . "\">PYL-AP" . "</a> - " . c_version . " - " . date("Ymd.Hi", filemtime("common.inc")) . "&nbsp;&nbsp;";
-    echo "</div>\n";
+    \Top7\Utils\Logger::printVersion();
 }
 
+/**
+ * Log a message - Legacy wrapper for Logger::log()
+ * @deprecated Use \Top7\Utils\Logger::log() instead
+ */
 function print_log($function, $name, $msg)
 {
-    global $debug, $f_debugs, $log_path;
-    //if( $debug and in_array($function, $f_debugs)) {
-    if (in_array($function, $f_debugs)) {
-        $log = date("Ymd G:i:s ") . $function . ' [' . $name . '] ' . $msg . PHP_EOL;
-        file_put_contents($log_path . '/log_' . date("Ymd") . '.txt', $log, FILE_APPEND);
-    }
+    \Top7\Utils\Logger::log($function, $name, $msg);
 }
 
+/**
+ * Log a variable - Legacy wrapper for Logger::logVar()
+ * @deprecated Use \Top7\Utils\Logger::logVar() instead
+ */
 function printr_log($function, $name, $var)
 {
-    # ex: print_log( __FUNCTION__, "test", var_export($p, TRUE));
-    print_log($function, $name, var_export($var, true));
+    \Top7\Utils\Logger::logVar($function, $name, $var);
 }
 
 function print_header_head($class, $utf8, $js)
@@ -372,119 +381,79 @@ function print_header_display($t)
     echo "<body class=\"top7\" onLoad=\"display_c( $t);\">\n";
 }
 
+/**
+ * Log error and die - Legacy wrapper for Logger::error()
+ * @deprecated Use \Top7\Utils\Logger::error() instead
+ */
 function error($function, $line)
 {
-    global $debug;
-    print_log(__FUNCTION__, $function, $line);
-    if($debug === false) header('location: index');
-    $d = date("Ymd G:i:s ");
-    die("<pre>TOP7 - Error - See log at $d !</pre>");
+    \Top7\Utils\Logger::error($function, $line);
 }
 
+/**
+ * Initialize database with player credentials - Legacy wrapper for Connection::initPlayer()
+ * @deprecated Use \Top7\Database\Connection::initPlayer() instead
+ */
 function init_sql()
 {
-    global $db_player;
-    sql($db_player);
+    \Top7\Database\Connection::initPlayer();
     #error_reporting(E_ALL);
     #ini_set('display_errors', 1);
 }
 
+/**
+ * Initialize database with admin credentials - Legacy wrapper for Connection::initAdmin()
+ * @deprecated Use \Top7\Database\Connection::initAdmin() instead
+ */
 function init_admin_sql()
 {
-    global $db_admin;
-    sql($db_admin);
+    \Top7\Database\Connection::initAdmin();
 }
 
+/**
+ * Connect to database - Legacy wrapper for Connection::connect()
+ * @deprecated Use \Top7\Database\Connection::connect() instead
+ */
 function sql($login)
 {
-    global $strDate;
-    setlocale(LC_TIME, 'fr_FR', 'fra');
-    $strDate = mb_convert_encoding('%a %d %b %Y %H:%M', 'ISO-8859-9', 'UTF-8');
-
-    global $top7_db;
-    $server   = $top7_db['server'];
-    $database = $top7_db['database'];
-    $user     = $login['user'];
-    $password = $login['password'];
-    $charset  = "utf8mb4";
-
     global $pdo;
-    try {
-        $pdo = new PDO("mysql:dbname=$database;host=$server;charset=$charset", $user, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (Exception $e) {
-        print_log("error", "sql", "db init");
-        error(__FUNCTION__, "(db init)" . $e->getMessage());
-    }
+    $pdo = \Top7\Database\Connection::connect($login);
 }
 
+/**
+ * Fetch data from database - Legacy wrapper for QueryExecutor::fetch()
+ * @deprecated Use \Top7\Database\QueryExecutor::fetch() instead
+ */
 function pdo_fetch_param($function, $mode, $query, $param)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    $r = NULL;
-    try {
-        $select = $pdo->prepare($query);
-        $select->setFetchMode(PDO::FETCH_ASSOC);
-        $select->execute($param);
-        if ($mode == c_one) {
-            $r = $select->fetch();
-        }
-
-        if ($mode == c_all) {
-            $r = $select->fetchAll();
-        }
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
-    printr_log($function, "sql", $r);
-    return $r;
+    return \Top7\Database\QueryExecutor::fetch($function, $mode, $query, $param);
 }
 
+/**
+ * Fetch data from database without parameters - Legacy wrapper
+ * @deprecated Use \Top7\Database\QueryExecutor::fetch() instead
+ */
 function pdo_fetch($function, $mode, $query)
 {
-    return pdo_fetch_param($function, $mode, $query, null);
+    return \Top7\Database\QueryExecutor::fetch($function, $mode, $query, null);
 }
 
+/**
+ * Execute database query - Legacy wrapper for QueryExecutor::execute()
+ * @deprecated Use \Top7\Database\QueryExecutor::execute() instead
+ */
 function pdo_exec($function, $query)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    try {
-        $select = $pdo->prepare($query);
-        $select->execute();
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
+    \Top7\Database\QueryExecutor::execute($function, $query);
 }
 
+/**
+ * Insert data and return last ID - Legacy wrapper for QueryExecutor::insert()
+ * @deprecated Use \Top7\Database\QueryExecutor::insert() instead
+ */
 function pdo_insert($function, $query, $data)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    try {
-        $insert = $pdo->prepare($query);
-        $insert->execute($data);
-        $r = $pdo->lastInsertId();
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
-    return $r;
+    return \Top7\Database\QueryExecutor::insert($function, $query, $data);
 }
 
 function display_select_player($top7team, $selected_player)
@@ -671,11 +640,13 @@ function get_player_season($player, $season)
     return pdo_fetch(__FUNCTION__, c_one, $query);
 }
 
+/**
+ * Get player by ID - Legacy wrapper for UserService::getPlayer()
+ * @deprecated Use \Top7\Auth\UserService::getPlayer() instead
+ */
 function get_player($player)
 {
-
-    $query = "select * from player where player_idx=$player";
-    return pdo_fetch(__FUNCTION__, c_one, $query);
+    return \Top7\Auth\UserService::getPlayer($player);
 }
 
 function get_pronos($day, $top7team)
@@ -4280,6 +4251,8 @@ function put_new_password_form($key, $status, $pseudo, $email, $errors)
     echo "</tr>\n";
 
     echo "<form id=\"PasswordForm\" action=\"$action\" method=\"post\" onsubmit=\"return check_not_empty()\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<tr>\n";
     echo "<td colspan=\"2\" align=\"left\">";
@@ -4358,6 +4331,8 @@ function put_password_form($action)
     echo "</tr>\n";
 
     echo "<form id=\"PasswordForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<tr>\n";
     echo "<td colspan=\"2\">";
@@ -4532,6 +4507,8 @@ function put_register_form($team, $pseudos, $emails, $errors, $action="register"
 
     echo "<td align=\"center\" colspan=\"3\">\n";
     echo "<form id=\"RegisterForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
     echo "Equipe ";
     echo "<input class=\"$class\" autofocus=\"autofocus\" type=\"text\" size=\"$size\" name=\"$name\" placeholder=\"$info\" value=\"$team\">";
     echo "</td>\n";
@@ -4755,6 +4732,8 @@ function put_login_form($token)
 
     $action = "login";
     echo "<form id=\"LoginForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<table class=\"login\" border=0>\n";
 
@@ -5632,27 +5611,13 @@ function put_blog()
     echo "</div>\n";
 }
 
+/**
+ * Check session validity - Legacy wrapper for SessionManager::checkSession()
+ * @deprecated Use \Top7\Auth\SessionManager::checkSession() instead
+ */
 function check_session()
 {
-
-    session_start();
-    printr_log(__FUNCTION__, "SESSION", $_SESSION);
-
-    if (isset($_SESSION['last_activity']) && (now() - $_SESSION['last_activity'] > c_session_activity)) {
-        session_unset();
-        session_destroy();
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-        exit;
-    }
-    $_SESSION['last_activity'] = now();
-
-    if (!isset($_SESSION['login'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-    }
-
-    if (!isset($_SESSION['token'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-    }
+    \Top7\Auth\SessionManager::checkSession();
 }
 
 function save_rss($url)
@@ -5787,18 +5752,13 @@ function get_all_players($season)
     return pdo_fetch(__FUNCTION__, c_all, $query);
 }
 
+/**
+ * Check player status - Legacy wrapper for UserService::getPlayerStatus()
+ * @deprecated Use \Top7\Auth\UserService::getPlayerStatus() instead
+ */
 function check_status_player($p)
 {
-
-    printr_log(__FUNCTION__, "p", $p);
-    $player           = $p['player'];
-    $info_player      = get_info_player($player);
-    $info_team        = get_info_team($info_player['team']);
-    $status           = array();
-    $status['player'] = $info_player['status'];
-    $status['team']   = $info_team['status'];
-    printr_log(__FUNCTION__, "status", $status);
-    return $status;
+    return \Top7\Auth\UserService::getPlayerStatus($p);
 }
 
 function get_top7_day_selection($day, $p)
@@ -6267,19 +6227,35 @@ function check_player($p)
     init_sql();
 
     global $pdo;
-    $query = "select player_idx as player, season, pseudo, team, email, password, captain from player ";
+    $query = "select player_idx as player, season, pseudo, team, email, password, password_new, captain from player ";
     $query .= "where email=?  order by player_idx desc limit 1";
     $row = pdo_fetch_param(__FUNCTION__, c_one, $query, array($p['login']));
 
-    if (isset($row['password']) and $row['password'] == md5($p['password'])) {
+    // Initialize PasswordService (Phase 1, Task 1.1.1)
+    $passwordService = new \Top7\Auth\PasswordService();
+
+    // Try new Argon2ID password first
+    if (!empty($row['password_new']) && $passwordService->verify($p['password'], $row['password_new'])) {
         $player = $row;
-    } else {
+        printr_log(__FUNCTION__, "auth", "Argon2ID hash verified");
+    }
+    // Fallback to old MD5 password (for migration period)
+    elseif (isset($row['password']) && $row['password'] == md5($p['password'])) {
+        $player = $row;
+        printr_log(__FUNCTION__, "auth", "MD5 hash verified (auto-migrating)");
+
+        // Auto-migrate to new hash
+        $new_hash = $passwordService->hash($p['password']);
+        $update_query = "UPDATE player SET password_new = ? WHERE player_idx = ?";
+        pdo_exec($update_query, array($new_hash, $row['player_idx']));
+        printr_log(__FUNCTION__, "migration", "Password migrated to Argon2ID");
+    }
+    else {
         $player = false;
+        printr_log(__FUNCTION__, "auth", "Authentication failed");
     }
 
-
     printr_log(__FUNCTION__, "password", $p['password']);
-    printr_log(__FUNCTION__, "md5.password", md5($p['password']));
     printr_log(__FUNCTION__, "player", $player);
 
     return $player;
@@ -6328,11 +6304,13 @@ function get_palmares_player($email)
     return $palmares;
 }
 
+/**
+ * Get player info by ID - Legacy wrapper for UserService::getPlayerInfo()
+ * @deprecated Use \Top7\Auth\UserService::getPlayerInfo() instead
+ */
 function get_info_player($player)
 {
-
-    $query = "select * from `player` where player_idx=\"$player\"";
-    return pdo_fetch(__FUNCTION__, c_one, $query);
+    return \Top7\Auth\UserService::getPlayerInfo($player);
 }
 
 function get_last_password_email($player)
@@ -6792,7 +6770,11 @@ function update_register($pseudo, $email, $password)
     $query       = "select player_idx, status, date_reg from player where pseudo=? and email=? and season=?";
     $row         = pdo_fetch_param(__FUNCTION__, c_one, $query, array($pseudo, $email, $season));
 
-    $password = md5($password);
+    // Use new Argon2ID hashing (Phase 1, Task 1.1.1)
+    $passwordService = new \Top7\Auth\PasswordService();
+    $password_new = $passwordService->hash($password);
+    $password_md5 = md5($password); // Keep MD5 for backward compatibility temporarily
+
     $date_reg = $row['date_reg'];
     $status   = $row['status'];
     $player   = $row['player_idx'];
@@ -6803,9 +6785,10 @@ function update_register($pseudo, $email, $password)
         $date_reg = strftime($format, now());
     }
 
-    printr_log(__FUNCTION__, "data", array($password, $status, $date_reg, $pseudo, $email));
-    $query = "update player set password=?, status=?, date_reg=? where pseudo=? and email=?";
-    $row   = pdo_fetch_param(__FUNCTION__, c_none, $query, array($password, $status, $date_reg, $pseudo, $email));
+    printr_log(__FUNCTION__, "data", array($password_new, $status, $date_reg, $pseudo, $email));
+    // Update both password fields during migration period
+    $query = "update player set password=?, password_new=?, status=?, date_reg=? where pseudo=? and email=?";
+    $row   = pdo_fetch_param(__FUNCTION__, c_none, $query, array($password_md5, $password_new, $status, $date_reg, $pseudo, $email));
 
     return $player;
 }
@@ -7035,40 +7018,13 @@ function display_info_team($p)
     print_table_info("Equipe Top7", $infos);
 }
 
+/**
+ * Send email - Legacy wrapper for EmailService::send()
+ * @deprecated Use \Top7\Utils\EmailService::send() instead
+ */
 function send_email($p)
 {
-
-    global $debug_email;
-
-    setlocale(LC_TIME, "fr_FR");
-
-    $email_admin = c_email_admin;
-    $headers     = "From: $email_admin" . "\r\n";
-    $headers .= "Reply-To: $email_admin" . "\r\n";
-    $headers .= "MIME-Version: 1.0" . "\r\n";
-    $headers .= 'Content-Type: text/html; charset="utf-8"' . "\r\n";
-    $headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
-
-    $dest    = $p['dest'];
-    $subject = "Top7 : " . $p['subject'];
-
-    $msg = "<html><head><title>Top7</title></head><body>";
-    $msg .= $p['msg'];
-    $msg .= "<br>_________________________________________<br>";
-    $msg .= "<a href=\"" . c_url_top7 . "\">www.topseven.fr</a><br>";
-    #$msg .= "<br>".strftime(" %d/%m/%Y %H:%M")."</pre>";
-    $msg .= "</body></html>";
-
-    #$subject = utf8_encode( $subject);
-    #$msg = utf8_encode( $msg);
-
-    if (!$debug_email) {
-        mail($dest, $subject, $msg, $headers);
-    }
-
-    mail(c_email_pyl, $subject, $msg, $headers);
-    #mail( "pylscblt@gmail.com", $subject, $msg, $headers);
-    #echo $msg;
+    \Top7\Utils\EmailService::send($p);
 }
 
 function get_exec_time()
