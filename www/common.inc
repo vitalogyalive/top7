@@ -254,28 +254,31 @@ $f_debugs = array(
     "stats",
     "register_same_top7team");
 
+/**
+ * Print version info - Legacy wrapper for Logger::printVersion()
+ * @deprecated Use \Top7\Utils\Logger::printVersion() instead
+ */
 function print_version()
 {
-
-    echo "<div id=\"footer\">\n";
-    echo "&copy; " . c_copyright . " - <a href=\"" . c_url_github . "\">PYL-AP" . "</a> - " . c_version . " - " . date("Ymd.Hi", filemtime("common.inc")) . "&nbsp;&nbsp;";
-    echo "</div>\n";
+    \Top7\Utils\Logger::printVersion();
 }
 
+/**
+ * Log a message - Legacy wrapper for Logger::log()
+ * @deprecated Use \Top7\Utils\Logger::log() instead
+ */
 function print_log($function, $name, $msg)
 {
-    global $debug, $f_debugs, $log_path;
-    //if( $debug and in_array($function, $f_debugs)) {
-    if (in_array($function, $f_debugs)) {
-        $log = date("Ymd G:i:s ") . $function . ' [' . $name . '] ' . $msg . PHP_EOL;
-        file_put_contents($log_path . '/log_' . date("Ymd") . '.txt', $log, FILE_APPEND);
-    }
+    \Top7\Utils\Logger::log($function, $name, $msg);
 }
 
+/**
+ * Log a variable - Legacy wrapper for Logger::logVar()
+ * @deprecated Use \Top7\Utils\Logger::logVar() instead
+ */
 function printr_log($function, $name, $var)
 {
-    # ex: print_log( __FUNCTION__, "test", var_export($p, TRUE));
-    print_log($function, $name, var_export($var, true));
+    \Top7\Utils\Logger::logVar($function, $name, $var);
 }
 
 function print_header_head($class, $utf8, $js)
@@ -378,13 +381,13 @@ function print_header_display($t)
     echo "<body class=\"top7\" onLoad=\"display_c( $t);\">\n";
 }
 
+/**
+ * Log error and die - Legacy wrapper for Logger::error()
+ * @deprecated Use \Top7\Utils\Logger::error() instead
+ */
 function error($function, $line)
 {
-    global $debug;
-    print_log(__FUNCTION__, $function, $line);
-    if($debug === false) header('location: index');
-    $d = date("Ymd G:i:s ");
-    die("<pre>TOP7 - Error - See log at $d !</pre>");
+    \Top7\Utils\Logger::error($function, $line);
 }
 
 function init_sql()
@@ -7070,40 +7073,13 @@ function display_info_team($p)
     print_table_info("Equipe Top7", $infos);
 }
 
+/**
+ * Send email - Legacy wrapper for EmailService::send()
+ * @deprecated Use \Top7\Utils\EmailService::send() instead
+ */
 function send_email($p)
 {
-
-    global $debug_email;
-
-    setlocale(LC_TIME, "fr_FR");
-
-    $email_admin = c_email_admin;
-    $headers     = "From: $email_admin" . "\r\n";
-    $headers .= "Reply-To: $email_admin" . "\r\n";
-    $headers .= "MIME-Version: 1.0" . "\r\n";
-    $headers .= 'Content-Type: text/html; charset="utf-8"' . "\r\n";
-    $headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
-
-    $dest    = $p['dest'];
-    $subject = "Top7 : " . $p['subject'];
-
-    $msg = "<html><head><title>Top7</title></head><body>";
-    $msg .= $p['msg'];
-    $msg .= "<br>_________________________________________<br>";
-    $msg .= "<a href=\"" . c_url_top7 . "\">www.topseven.fr</a><br>";
-    #$msg .= "<br>".strftime(" %d/%m/%Y %H:%M")."</pre>";
-    $msg .= "</body></html>";
-
-    #$subject = utf8_encode( $subject);
-    #$msg = utf8_encode( $msg);
-
-    if (!$debug_email) {
-        mail($dest, $subject, $msg, $headers);
-    }
-
-    mail(c_email_pyl, $subject, $msg, $headers);
-    #mail( "pylscblt@gmail.com", $subject, $msg, $headers);
-    #echo $msg;
+    \Top7\Utils\EmailService::send($p);
 }
 
 function get_exec_time()
