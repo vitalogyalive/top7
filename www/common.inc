@@ -30,6 +30,12 @@ require_once __DIR__ . '/src/Auth/PasswordService.php';
 // Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
 require_once __DIR__ . '/src/Security/CsrfToken.php';
 
+// Load Logger for error logging (Phase 1, Task 1.2.1)
+require_once __DIR__ . '/src/Utils/Logger.php';
+
+// Load Connection for database management (Phase 1, Task 1.2.1)
+require_once __DIR__ . '/src/Database/Connection.php';
+
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
 define("c_one", 1);
