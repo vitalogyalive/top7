@@ -4,7 +4,18 @@
  * author     : pyl
  * creation     : Oct 2014, v1.0
  * update       : Sep 2017, v2.0, PHP5.4 -> PHP7.1 + PDO
+ * update       : Nov 2025, v3.0, Modernization - Security & Refactoring
  */
+
+// Load new modular architecture
+require_once __DIR__ . '/src/bootstrap.php';
+
+// Import new classes for backward compatibility
+use Top7\Database\Connection;
+use Top7\Auth\SessionManager;
+use Top7\Auth\UserService;
+use Top7\Security\PasswordService;
+use Top7\Security\CsrfToken;
 
 #require( dirname( __DIR__) . "/dev/conf/conf.php");
 #require( dirname( __DIR__) . "/www/conf/conf.php");
@@ -14,13 +25,12 @@ $ovh_path    = dirname(__DIR__) . "/www/conf/conf.php";
 $docker_path = "/var/www/html/conf/conf.php";
 
 if (file_exists($ovh_path)) {
-    require $ovh_path;
     $log_path = __DIR__ . "/../tmp";
 } elseif (file_exists($docker_path)) {
-    require $docker_path;
     $log_path = "/tmp";
 } else {
-    exit;
+    // Config already loaded by bootstrap, just set log path
+    $log_path = "/tmp";
 }
 // blank page is displayed if file not found
 
@@ -4756,6 +4766,12 @@ function put_login_form($token)
     $action = "login";
     echo "<form id=\"LoginForm\" action=\"$action\" method=\"post\">\n";
 
+    // Add CSRF protection (new secure method)
+    echo CsrfToken::field();
+
+    // Keep legacy token for backward compatibility
+    echo "<input type=\"hidden\" name=\"token\" value=\"$token\">\n";
+
     echo "<table class=\"login\" border=0>\n";
 
     echo "<tr>\n";
@@ -4803,8 +4819,6 @@ function put_login_form($token)
     echo "</tr>\n";
 
     echo "</table>\n";
-
-    echo "<input type=\"hidden\" name=\"token\" value=\"$token\">\n";
 
     // google recaptcha
     echo "<input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\">\n";
@@ -5634,24 +5648,14 @@ function put_blog()
 
 function check_session()
 {
+    // Use new session management system
+    SessionManager::check(true);
 
-    session_start();
     printr_log(__FUNCTION__, "SESSION", $_SESSION);
 
-    if (isset($_SESSION['last_activity']) && (now() - $_SESSION['last_activity'] > c_session_activity)) {
-        session_unset();
-        session_destroy();
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-        exit;
-    }
-    $_SESSION['last_activity'] = now();
-
-    if (!isset($_SESSION['login'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-    }
-
+    // Legacy token check (can be removed once CSRF is fully implemented)
     if (!isset($_SESSION['token'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
+        $_SESSION['token'] = bin2hex(random_bytes(32));
     }
 }
 
@@ -6262,27 +6266,28 @@ function check_player_phase_reguliere($p)
 
 function check_player($p)
 {
-
     printr_log(__FUNCTION__, "login", $p['login']);
-    init_sql();
 
-    global $pdo;
-    $query = "select player_idx as player, season, pseudo, team, email, password, captain from player ";
-    $query .= "where email=?  order by player_idx desc limit 1";
-    $row = pdo_fetch_param(__FUNCTION__, c_one, $query, array($p['login']));
+    // Use new authentication system
+    $player = UserService::authenticate($p['login'], $p['password']);
 
-    if (isset($row['password']) and $row['password'] == md5($p['password'])) {
-        $player = $row;
+    if ($player) {
+        // Convert to old format for backward compatibility
+        $result = [
+            'player' => $player['id'],
+            'season' => $player['season'],
+            'pseudo' => $player['login'],
+            'team' => $player['team'] ?? null,
+            'email' => $player['email'],
+            'password' => $player['password'],
+            'captain' => $player['mode'] ?? c_player
+        ];
+        printr_log(__FUNCTION__, "player authenticated", $result);
+        return $result;
     } else {
-        $player = false;
+        printr_log(__FUNCTION__, "authentication failed", null);
+        return false;
     }
-
-
-    printr_log(__FUNCTION__, "password", $p['password']);
-    printr_log(__FUNCTION__, "md5.password", md5($p['password']));
-    printr_log(__FUNCTION__, "player", $player);
-
-    return $player;
 }
 
 function get_button($name, $team, $action, $p, $nb_teams)
@@ -6400,9 +6405,8 @@ function init_password_pending($player)
 
 function insert_password_player($player)
 {
-
-    $key    = random_generator(10);
-    $key    = md5($key);
+    // Use new secure token generation
+    $key    = PasswordService::generateToken(16); // 16 bytes = 32 hex characters
     $time   = now();
     $status = c_password_pending;
     $query  = "insert into `password` ( `player`, `time`, `keyword`, `status`) value ( '$player', '$time', '$key', '$status')";
@@ -6812,8 +6816,11 @@ function update_register($pseudo, $email, $password)
 
 function insert_new_player($pseudo, $email, $team, $captain)
 {
+    // Use new secure password hashing
+    $defaultPassword = "top7top7";
+    $password_old = md5($defaultPassword); // Legacy field for migration
+    $password_new = PasswordService::hash($defaultPassword); // New secure hash
 
-    $password = md5("top7top7");
     $pseudo   = $pseudo;
     $email    = $email;
     $team     = $team;
@@ -6824,17 +6831,18 @@ function insert_new_player($pseudo, $email, $team, $captain)
     $status   = c_player_waiting;
     $format   = "%Y-%m-%d %H:%M";
     $date_reg = strftime($format, now());
-    $query  = "insert into player (season, pseudo, password, email, status, team, captain, date_reg) ";
-    $query .= "value (:season, :pseudo, :password, :email, :status, :team,  :captain, :date_reg)";
+    $query  = "insert into player (season, pseudo, password, password_new, email, status, team, captain, date_reg) ";
+    $query .= "value (:season, :pseudo, :password, :password_new, :email, :status, :team, :captain, :date_reg)";
     $data = array(
-        "season"    => $season,
-        "pseudo"    => $pseudo,
-        "password"  => $password,
-        "email"     => $email,
-        "status"    => $status,
-        "team"      => $team,
-        "captain"   => $captain,
-        "date_reg"  => $date_reg
+        "season"       => $season,
+        "pseudo"       => $pseudo,
+        "password"     => $password_old,
+        "password_new" => $password_new,
+        "email"        => $email,
+        "status"       => $status,
+        "team"         => $team,
+        "captain"      => $captain,
+        "date_reg"     => $date_reg
     );
     return pdo_insert(__FUNCTION__, $query, $data);
 }
