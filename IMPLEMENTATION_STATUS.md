@@ -1,8 +1,8 @@
 # Top7 Modernization - Implementation Status
 
-**Last Updated**: 2025-11-09 (Week 2 Complete)
+**Last Updated**: 2025-11-09 (Week 2 Enhanced)
 **Branch**: `claude/modernization-plan-implementation-011CUxPA22Ux7f9yioJF2AMr`
-**Latest Commit**: 3302b39 (Database extraction)
+**Latest Commit**: 2ca98e7 (Auth extraction)
 
 ---
 
@@ -101,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
 **Status**: CORE MODULES EXTRACTED ✅
 **Original Size**: 9329 lines, 230 functions
-**Progress**: Infrastructure + Utils + Database modules complete
-**Commits**: ac70c49 (infrastructure), dd5aa73 (Utils), 3302b39 (Database)
+**Progress**: Infrastructure + Utils + Database + Auth modules complete
+**Commits**: ac70c49 (infrastructure), dd5aa73 (Utils), 3302b39 (Database), 2ca98e7 (Auth)
 
 #### Completed Extractions:
 
@@ -129,9 +129,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
   - pdo_exec() → QueryExecutor::execute()
   - pdo_insert() → QueryExecutor::insert()
 
-**Total Extracted**: 11 functions converted to 2 modules (5 classes)
-**Lines Extracted**: ~600 lines from common.inc to dedicated classes
-**Lines Saved**: ~150 lines (wrappers are much smaller than originals)
+**3. Auth Module** (2ca98e7):
+- ✅ `Auth/UserService.php` - User/player management (3 functions + 8 helpers)
+  - get_player() → UserService::getPlayer()
+  - get_info_player() → UserService::getPlayerInfo()
+  - check_status_player() → UserService::getPlayerStatus()
+  - Plus: getPlayerByEmail(), getPlayerPseudo(), isCaptain(), getPlayerTeam(), getPlayerSeason(), updatePlayerEmail(), emailExists()
+
+- ✅ `Auth/SessionManager.php` - Session management (1 function + 11 helpers)
+  - check_session() → SessionManager::checkSession()
+  - Plus: destroySession(), redirectToIndex(), startSession(), isSessionActive(), get/set/has/remove(), all(), initPlayerSession(), initAdminSession()
+
+**Total Extracted**: 15 functions converted to 3 modules (7 classes)
+**Lines Extracted**: ~1000 lines from common.inc to dedicated classes
+**Lines Saved**: ~200 lines (wrappers are much smaller than originals)
 
 #### Infrastructure Complete:
 - ✅ Created `src/bootstrap.php` with PSR-4 autoloader
@@ -390,18 +401,19 @@ Remaining modules to extract (~150+ functions):
 | Week 2 | Infrastructure | ✅ Complete | 100% |
 | Week 2 | Utils Extraction | ✅ Complete | 100% |
 | Week 2 | Database Extraction | ✅ Complete | 100% |
-| Week 2 | Function Extraction | 🚧 In Progress | 11/230 (5%) |
+| Week 2 | Auth Extraction | ✅ Complete | 100% |
+| Week 2 | Function Extraction | 🚧 In Progress | 15/230 (6.5%) |
 | Week 2 | Testing | 🚧 Pending | 0% |
 | Week 2 | Unit Tests | 🚧 Pending | 0% |
 | Week 3 | Tailwind CSS | 🚧 Pending | 0% |
 | Week 4 | Responsive Design | 🚧 Pending | 0% |
 
-**Overall Phase 1 Progress**: ~35% (Week 1 complete + core Week 2 modules extracted)
+**Overall Phase 1 Progress**: ~40% (Week 1 complete + core Week 2 modules extracted)
 
-**Code Extraction Progress**: 11/230 functions (5%)
-- ✅ Utils: 4/4 functions
-- ✅ Database: 7/7 functions
-- ⏳ Auth: 0/~15 functions
+**Code Extraction Progress**: 15/230 functions (6.5%)
+- ✅ Utils: 4/4 functions (100%)
+- ✅ Database: 7/7 functions (100%)
+- ✅ Auth: 4/4 core functions (100%) + 19 helper methods
 - ⏳ Game: 0/~80 functions
 - ⏳ Display: 0/~60 functions
 - ⏳ Stats: 0/~20 functions
