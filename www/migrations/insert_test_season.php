@@ -40,27 +40,25 @@ try {
     $currentYear = date('Y');
     $nextYear = $currentYear + 1;
 
-    $seasonData = [
-        'Id' => 1,
-        'title' => "Season $currentYear-$nextYear (Test)",
-        'start' => "$currentYear-09-01",           // Season starts September 1st
-        'start_register' => "$currentYear-08-01",  // Registration opens August 1st
-        'stop_register' => "$currentYear-12-31",   // Registration closes December 31st
-        'close_forum' => "$nextYear-06-30",        // Forum closes June 30th next year
-    ];
+    $seasonId = 1;
+    $seasonTitle = "Season $currentYear-$nextYear (Test)";
+    $seasonStart = "$currentYear-09-01";
+    $startRegister = "$currentYear-08-01";
+    $stopRegister = "$currentYear-12-31";
+    $closeForum = "$nextYear-06-30";
 
     $sql = "INSERT INTO `season` (`Id`, `title`, `start`, `start_register`, `stop_register`, `close_forum`)
-            VALUES (:id, :title, :start, :start_register, :stop_register, :close_forum)";
+            VALUES (?, ?, ?, ?, ?, ?)";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($seasonData);
+    $stmt->execute([$seasonId, $seasonTitle, $seasonStart, $startRegister, $stopRegister, $closeForum]);
 
     echo "✓ Created test season:\n";
-    echo "  ID: {$seasonData['Id']}\n";
-    echo "  Title: {$seasonData['title']}\n";
-    echo "  Season Start: {$seasonData['start']}\n";
-    echo "  Registration Period: {$seasonData['start_register']} to {$seasonData['stop_register']}\n";
-    echo "  Forum Closes: {$seasonData['close_forum']}\n";
+    echo "  ID: {$seasonId}\n";
+    echo "  Title: {$seasonTitle}\n";
+    echo "  Season Start: {$seasonStart}\n";
+    echo "  Registration Period: {$startRegister} to {$stopRegister}\n";
+    echo "  Forum Closes: {$closeForum}\n";
 
     // Create basic calendar entries (26 match days for a typical rugby season)
     echo "\nCreating calendar entries...\n";
@@ -68,7 +66,7 @@ try {
     $calendarSql = "INSERT INTO `calendar` (`season`, `day`, `date`) VALUES (?, ?, ?)";
     $calendarStmt = $pdo->prepare($calendarSql);
 
-    $startDate = new DateTime($seasonData['start']);
+    $startDate = new DateTime($seasonStart);
 
     for ($day = 1; $day <= 26; $day++) {
         // Rugby matches are typically weekly, on Saturdays
@@ -76,7 +74,7 @@ try {
         $matchDate->modify('+' . ($day - 1) . ' weeks');
 
         $calendarStmt->execute([
-            $seasonData['Id'],
+            $seasonId,
             $day,
             $matchDate->format('Y-m-d')
         ]);
