@@ -390,110 +390,70 @@ function error($function, $line)
     \Top7\Utils\Logger::error($function, $line);
 }
 
+/**
+ * Initialize database with player credentials - Legacy wrapper for Connection::initPlayer()
+ * @deprecated Use \Top7\Database\Connection::initPlayer() instead
+ */
 function init_sql()
 {
-    global $db_player;
-    sql($db_player);
+    \Top7\Database\Connection::initPlayer();
     #error_reporting(E_ALL);
     #ini_set('display_errors', 1);
 }
 
+/**
+ * Initialize database with admin credentials - Legacy wrapper for Connection::initAdmin()
+ * @deprecated Use \Top7\Database\Connection::initAdmin() instead
+ */
 function init_admin_sql()
 {
-    global $db_admin;
-    sql($db_admin);
+    \Top7\Database\Connection::initAdmin();
 }
 
+/**
+ * Connect to database - Legacy wrapper for Connection::connect()
+ * @deprecated Use \Top7\Database\Connection::connect() instead
+ */
 function sql($login)
 {
-    global $strDate;
-    setlocale(LC_TIME, 'fr_FR', 'fra');
-    $strDate = mb_convert_encoding('%a %d %b %Y %H:%M', 'ISO-8859-9', 'UTF-8');
-
-    global $top7_db;
-    $server   = $top7_db['server'];
-    $database = $top7_db['database'];
-    $user     = $login['user'];
-    $password = $login['password'];
-    $charset  = "utf8mb4";
-
     global $pdo;
-    try {
-        $pdo = new PDO("mysql:dbname=$database;host=$server;charset=$charset", $user, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (Exception $e) {
-        print_log("error", "sql", "db init");
-        error(__FUNCTION__, "(db init)" . $e->getMessage());
-    }
+    $pdo = \Top7\Database\Connection::connect($login);
 }
 
+/**
+ * Fetch data from database - Legacy wrapper for QueryExecutor::fetch()
+ * @deprecated Use \Top7\Database\QueryExecutor::fetch() instead
+ */
 function pdo_fetch_param($function, $mode, $query, $param)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    $r = NULL;
-    try {
-        $select = $pdo->prepare($query);
-        $select->setFetchMode(PDO::FETCH_ASSOC);
-        $select->execute($param);
-        if ($mode == c_one) {
-            $r = $select->fetch();
-        }
-
-        if ($mode == c_all) {
-            $r = $select->fetchAll();
-        }
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
-    printr_log($function, "sql", $r);
-    return $r;
+    return \Top7\Database\QueryExecutor::fetch($function, $mode, $query, $param);
 }
 
+/**
+ * Fetch data from database without parameters - Legacy wrapper
+ * @deprecated Use \Top7\Database\QueryExecutor::fetch() instead
+ */
 function pdo_fetch($function, $mode, $query)
 {
-    return pdo_fetch_param($function, $mode, $query, null);
+    return \Top7\Database\QueryExecutor::fetch($function, $mode, $query, null);
 }
 
+/**
+ * Execute database query - Legacy wrapper for QueryExecutor::execute()
+ * @deprecated Use \Top7\Database\QueryExecutor::execute() instead
+ */
 function pdo_exec($function, $query)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    try {
-        $select = $pdo->prepare($query);
-        $select->execute();
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
+    \Top7\Database\QueryExecutor::execute($function, $query);
 }
 
+/**
+ * Insert data and return last ID - Legacy wrapper for QueryExecutor::insert()
+ * @deprecated Use \Top7\Database\QueryExecutor::insert() instead
+ */
 function pdo_insert($function, $query, $data)
 {
-    global $pdo, $debug_mysql;
-    if ($debug_mysql) {
-        echo "<pre>$query</pre>";
-    }
-
-    print_log($function, "sql", $query);
-    try {
-        $insert = $pdo->prepare($query);
-        $insert->execute($data);
-        $r = $pdo->lastInsertId();
-    } catch (Exception $e) {
-        print_log("error", $function, $query);
-        error(__FUNCTION__, "(" . $function . ") " . $e->getMessage());
-    }
-    return $r;
+    return \Top7\Database\QueryExecutor::insert($function, $query, $data);
 }
 
 function display_select_player($top7team, $selected_player)
