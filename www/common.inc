@@ -402,7 +402,8 @@ function error($function, $line)
  */
 function init_sql()
 {
-    \Top7\Database\Connection::initPlayer();
+    global $pdo;
+    $pdo = \Top7\Database\Connection::initPlayer();
     #error_reporting(E_ALL);
     #ini_set('display_errors', 1);
 }
@@ -413,7 +414,8 @@ function init_sql()
  */
 function init_admin_sql()
 {
-    \Top7\Database\Connection::initAdmin();
+    global $pdo;
+    $pdo = \Top7\Database\Connection::initAdmin();
 }
 
 /**
