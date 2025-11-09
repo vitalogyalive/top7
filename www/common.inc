@@ -5952,7 +5952,7 @@ function init_time_session()
     date_default_timezone_set('Europe/Paris');
 
     $top7_season = get_top7_season();
-    print_log(__FUNCTION__, "top7_season", $top7_season);
+    printr_log(__FUNCTION__, "top7_season", $top7_season);
 
     if (isset($_SESSION['season'])) {
         $season = $_SESSION['season'];
