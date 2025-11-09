@@ -81,6 +81,76 @@ try {
     }
 
     echo "✓ Created 26 calendar entries (weekly matches)\n";
+
+    // Create Top 14 teams
+    echo "\nCreating Top 14 teams...\n";
+
+    $teams = [
+        ['Toulouse', 'Stade Toulousain', 1],
+        ['La Rochelle', 'Stade Rochelais', 2],
+        ['Bordeaux', 'Union Bordeaux-Bègles', 3],
+        ['Clermont', 'ASM Clermont Auvergne', 4],
+        ['Racing', 'Racing 92', 5],
+        ['Toulon', 'RC Toulon', 6],
+        ['Castres', 'Castres Olympique', 7],
+        ['Montpellier', 'Montpellier HR', 8],
+        ['Lyon', 'LOU Rugby', 9],
+        ['Stade Français', 'Stade Français Paris', 10],
+        ['Pau', 'Section Paloise', 11],
+        ['Bayonne', 'Aviron Bayonnais', 12],
+        ['Perpignan', 'USA Perpignan', 13],
+        ['Vannes', 'RC Vannes', 14],
+    ];
+
+    $teamSql = "INSERT INTO `team` (`team_short`, `team_long`, `team_idx`, `season`, `previous_season`)
+                VALUES (?, ?, ?, ?, ?)";
+    $teamStmt = $pdo->prepare($teamSql);
+
+    foreach ($teams as $team) {
+        $teamStmt->execute([
+            $team[0],      // team_short
+            $team[1],      // team_long
+            $team[2],      // team_idx
+            $seasonId,     // season
+            0              // previous_season
+        ]);
+    }
+
+    echo "✓ Created 14 teams\n";
+
+    // Create matches for the first few days
+    echo "\nCreating match schedule...\n";
+
+    $matchSql = "INSERT INTO `match` (`id`, `season`, `day`, `team1`, `team2`, `date`, `time`)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $matchStmt = $pdo->prepare($matchSql);
+
+    $matchId = 1;
+
+    // Create matches for first 5 days (each day has 7 matches - all 14 teams play)
+    for ($day = 1; $day <= 5; $day++) {
+        $matchDate = clone $startDate;
+        $matchDate->modify('+' . ($day - 1) . ' weeks');
+
+        // Create 7 matches per day (14 teams = 7 matches)
+        // Simple pairing: 1v2, 3v4, 5v6, etc.
+        for ($match = 0; $match < 7; $match++) {
+            $team1 = ($match * 2) + 1;
+            $team2 = ($match * 2) + 2;
+
+            $matchStmt->execute([
+                $matchId++,
+                $seasonId,
+                $day,
+                $team1,
+                $team2,
+                $matchDate->format('Y-m-d'),
+                '15:00:00'  // 3 PM match time
+            ]);
+        }
+    }
+
+    echo "✓ Created " . ($matchId - 1) . " matches (5 days)\n";
     echo "\n✓ Season setup complete!\n";
 
 } catch (PDOException $e) {
