@@ -640,11 +640,13 @@ function get_player_season($player, $season)
     return pdo_fetch(__FUNCTION__, c_one, $query);
 }
 
+/**
+ * Get player by ID - Legacy wrapper for UserService::getPlayer()
+ * @deprecated Use \Top7\Auth\UserService::getPlayer() instead
+ */
 function get_player($player)
 {
-
-    $query = "select * from player where player_idx=$player";
-    return pdo_fetch(__FUNCTION__, c_one, $query);
+    return \Top7\Auth\UserService::getPlayer($player);
 }
 
 function get_pronos($day, $top7team)
@@ -5609,27 +5611,13 @@ function put_blog()
     echo "</div>\n";
 }
 
+/**
+ * Check session validity - Legacy wrapper for SessionManager::checkSession()
+ * @deprecated Use \Top7\Auth\SessionManager::checkSession() instead
+ */
 function check_session()
 {
-
-    session_start();
-    printr_log(__FUNCTION__, "SESSION", $_SESSION);
-
-    if (isset($_SESSION['last_activity']) && (now() - $_SESSION['last_activity'] > c_session_activity)) {
-        session_unset();
-        session_destroy();
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-        exit;
-    }
-    $_SESSION['last_activity'] = now();
-
-    if (!isset($_SESSION['login'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-    }
-
-    if (!isset($_SESSION['token'])) {
-        echo '<meta http-equiv="refresh" content="0;URL=index">';
-    }
+    \Top7\Auth\SessionManager::checkSession();
 }
 
 function save_rss($url)
@@ -5764,18 +5752,13 @@ function get_all_players($season)
     return pdo_fetch(__FUNCTION__, c_all, $query);
 }
 
+/**
+ * Check player status - Legacy wrapper for UserService::getPlayerStatus()
+ * @deprecated Use \Top7\Auth\UserService::getPlayerStatus() instead
+ */
 function check_status_player($p)
 {
-
-    printr_log(__FUNCTION__, "p", $p);
-    $player           = $p['player'];
-    $info_player      = get_info_player($player);
-    $info_team        = get_info_team($info_player['team']);
-    $status           = array();
-    $status['player'] = $info_player['status'];
-    $status['team']   = $info_team['status'];
-    printr_log(__FUNCTION__, "status", $status);
-    return $status;
+    return \Top7\Auth\UserService::getPlayerStatus($p);
 }
 
 function get_top7_day_selection($day, $p)
@@ -6321,11 +6304,13 @@ function get_palmares_player($email)
     return $palmares;
 }
 
+/**
+ * Get player info by ID - Legacy wrapper for UserService::getPlayerInfo()
+ * @deprecated Use \Top7\Auth\UserService::getPlayerInfo() instead
+ */
 function get_info_player($player)
 {
-
-    $query = "select * from `player` where player_idx=\"$player\"";
-    return pdo_fetch(__FUNCTION__, c_one, $query);
+    return \Top7\Auth\UserService::getPlayerInfo($player);
 }
 
 function get_last_password_email($player)
