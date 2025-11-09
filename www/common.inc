@@ -36,6 +36,9 @@ require_once __DIR__ . '/src/Utils/Logger.php';
 // Load Connection for database management (Phase 1, Task 1.2.1)
 require_once __DIR__ . '/src/Database/Connection.php';
 
+// Load QueryExecutor for database queries (Phase 1, Task 1.2.1)
+require_once __DIR__ . '/src/Database/QueryExecutor.php';
+
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
 define("c_one", 1);
