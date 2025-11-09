@@ -24,6 +24,12 @@ if (file_exists($ovh_path)) {
 }
 // blank page is displayed if file not found
 
+// Load PasswordService for modern password hashing (Phase 1, Task 1.1.1)
+require_once __DIR__ . '/src/Auth/PasswordService.php';
+
+// Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
+require_once __DIR__ . '/src/Security/CsrfToken.php';
+
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
 define("c_one", 1);
@@ -4280,6 +4286,8 @@ function put_new_password_form($key, $status, $pseudo, $email, $errors)
     echo "</tr>\n";
 
     echo "<form id=\"PasswordForm\" action=\"$action\" method=\"post\" onsubmit=\"return check_not_empty()\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<tr>\n";
     echo "<td colspan=\"2\" align=\"left\">";
@@ -4358,6 +4366,8 @@ function put_password_form($action)
     echo "</tr>\n";
 
     echo "<form id=\"PasswordForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<tr>\n";
     echo "<td colspan=\"2\">";
@@ -4532,6 +4542,8 @@ function put_register_form($team, $pseudos, $emails, $errors, $action="register"
 
     echo "<td align=\"center\" colspan=\"3\">\n";
     echo "<form id=\"RegisterForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
     echo "Equipe ";
     echo "<input class=\"$class\" autofocus=\"autofocus\" type=\"text\" size=\"$size\" name=\"$name\" placeholder=\"$info\" value=\"$team\">";
     echo "</td>\n";
@@ -4755,6 +4767,8 @@ function put_login_form($token)
 
     $action = "login";
     echo "<form id=\"LoginForm\" action=\"$action\" method=\"post\">\n";
+    // CSRF Protection (Phase 1, Task 1.1.2)
+    echo \Top7\Security\CsrfToken::field();
 
     echo "<table class=\"login\" border=0>\n";
 
@@ -6267,19 +6281,35 @@ function check_player($p)
     init_sql();
 
     global $pdo;
-    $query = "select player_idx as player, season, pseudo, team, email, password, captain from player ";
+    $query = "select player_idx as player, season, pseudo, team, email, password, password_new, captain from player ";
     $query .= "where email=?  order by player_idx desc limit 1";
     $row = pdo_fetch_param(__FUNCTION__, c_one, $query, array($p['login']));
 
-    if (isset($row['password']) and $row['password'] == md5($p['password'])) {
+    // Initialize PasswordService (Phase 1, Task 1.1.1)
+    $passwordService = new \Top7\Auth\PasswordService();
+
+    // Try new Argon2ID password first
+    if (!empty($row['password_new']) && $passwordService->verify($p['password'], $row['password_new'])) {
         $player = $row;
-    } else {
+        printr_log(__FUNCTION__, "auth", "Argon2ID hash verified");
+    }
+    // Fallback to old MD5 password (for migration period)
+    elseif (isset($row['password']) && $row['password'] == md5($p['password'])) {
+        $player = $row;
+        printr_log(__FUNCTION__, "auth", "MD5 hash verified (auto-migrating)");
+
+        // Auto-migrate to new hash
+        $new_hash = $passwordService->hash($p['password']);
+        $update_query = "UPDATE player SET password_new = ? WHERE player_idx = ?";
+        pdo_exec($update_query, array($new_hash, $row['player_idx']));
+        printr_log(__FUNCTION__, "migration", "Password migrated to Argon2ID");
+    }
+    else {
         $player = false;
+        printr_log(__FUNCTION__, "auth", "Authentication failed");
     }
 
-
     printr_log(__FUNCTION__, "password", $p['password']);
-    printr_log(__FUNCTION__, "md5.password", md5($p['password']));
     printr_log(__FUNCTION__, "player", $player);
 
     return $player;
@@ -6792,7 +6822,11 @@ function update_register($pseudo, $email, $password)
     $query       = "select player_idx, status, date_reg from player where pseudo=? and email=? and season=?";
     $row         = pdo_fetch_param(__FUNCTION__, c_one, $query, array($pseudo, $email, $season));
 
-    $password = md5($password);
+    // Use new Argon2ID hashing (Phase 1, Task 1.1.1)
+    $passwordService = new \Top7\Auth\PasswordService();
+    $password_new = $passwordService->hash($password);
+    $password_md5 = md5($password); // Keep MD5 for backward compatibility temporarily
+
     $date_reg = $row['date_reg'];
     $status   = $row['status'];
     $player   = $row['player_idx'];
@@ -6803,9 +6837,10 @@ function update_register($pseudo, $email, $password)
         $date_reg = strftime($format, now());
     }
 
-    printr_log(__FUNCTION__, "data", array($password, $status, $date_reg, $pseudo, $email));
-    $query = "update player set password=?, status=?, date_reg=? where pseudo=? and email=?";
-    $row   = pdo_fetch_param(__FUNCTION__, c_none, $query, array($password, $status, $date_reg, $pseudo, $email));
+    printr_log(__FUNCTION__, "data", array($password_new, $status, $date_reg, $pseudo, $email));
+    // Update both password fields during migration period
+    $query = "update player set password=?, password_new=?, status=?, date_reg=? where pseudo=? and email=?";
+    $row   = pdo_fetch_param(__FUNCTION__, c_none, $query, array($password_md5, $password_new, $status, $date_reg, $pseudo, $email));
 
     return $player;
 }

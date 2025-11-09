@@ -5,6 +5,14 @@
 
 
 	init_sql();
+
+	// CSRF Protection (Phase 1, Task 1.1.2) - Validate only if form is submitted
+	if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token']))) {
+		error_log('CSRF token validation failed in update_password.php');
+		header('Location: password');
+		exit;
+	}
+
 	$key = $status = $pseudo = $email = $password1 = $password2 = 0;
 	if( isset( $_POST['pseudo'])) 		$pseudo		= $_POST['pseudo'];
 	if( isset( $_POST['email'])) 		$email		= $_POST['email'];
@@ -17,8 +25,8 @@
 
 		$errors = array();
 		$min = 8; $max = 20;
-		if( strlen( $password1) < $min) $errors[] = "Le mot de passe doit avoir au minimum $min caractères";
-		if( strlen( $password1) > $max) $errors[] = "Le mot de passe doit avoir au maximum $max caractères";
+		if( strlen( $password1) < $min) $errors[] = "Le mot de passe doit avoir au minimum $min caractï¿½res";
+		if( strlen( $password1) > $max) $errors[] = "Le mot de passe doit avoir au maximum $max caractï¿½res";
 		if( $password1 <> $password2)   $errors[] = "Les 2 mots de passe ne sont pas identiques";
 		if( count( $errors)) {
             		put_new_password_form( $key, $status, $pseudo, $email, $errors);

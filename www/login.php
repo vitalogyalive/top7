@@ -19,11 +19,15 @@
 	
 
 	session_start();
-	if( isset( $_POST['token']) and isset( $_SESSION['token']) 
-		and !empty($_POST['token']) and !empty($_SESSION['token'])  
-		and $_POST['token'] == $_SESSION['token']) { 
 
-		if( isset( $_POST['login']) and isset( $_POST['password'])) {
+	// CSRF Protection (Phase 1, Task 1.1.2)
+	if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
+		error_log('CSRF token validation failed in login.php');
+		echo '<meta http-equiv="refresh" content="0;URL=index">';
+		exit;
+	}
+
+	if( isset( $_POST['login']) and isset( $_POST['password'])) {
 
 
 			if( $_POST['login'] == c_admin_login and $_POST['password'] == c_admin_password) {
@@ -95,9 +99,8 @@
 			else {
 				$msg = $_POST['login'] . " est inconnu au bataillon !"; 
 	#echo "<script>alert(\"$msg\");</script>\n";
-			}
-
 		}
+
 	}
 
 	echo '<meta http-equiv="refresh" content="0;URL=index">';
