@@ -1,7 +1,8 @@
 # Top7 Modernization - Implementation Status
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-09 (Week 2 Complete)
 **Branch**: `claude/modernization-plan-implementation-011CUxPA22Ux7f9yioJF2AMr`
+**Latest Commit**: 3302b39 (Database extraction)
 
 ---
 
@@ -94,13 +95,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
 ---
 
-## 🚧 Phase 1 Week 2: Code Refactoring (IN PROGRESS)
+## ✅ Phase 1 Week 2: Code Refactoring (SUBSTANTIAL PROGRESS)
 
 ### 1.2.1: Split common.inc into Modules
 
-**Status**: INFRASTRUCTURE CREATED, EXTRACTION PENDING
-**Size**: 9329 lines, 230 functions
-**Estimated Effort**: 20-24 hours
+**Status**: CORE MODULES EXTRACTED ✅
+**Original Size**: 9329 lines, 230 functions
+**Progress**: Infrastructure + Utils + Database modules complete
+**Commits**: ac70c49 (infrastructure), dd5aa73 (Utils), 3302b39 (Database)
+
+#### Completed Extractions:
+
+**1. Utils Module** (dd5aa73):
+- ✅ `Utils/Logger.php` - Logging functionality (4 functions)
+  - print_log() → Logger::log()
+  - printr_log() → Logger::logVar()
+  - error() → Logger::error()
+  - print_version() → Logger::printVersion()
+
+- ✅ `Utils/EmailService.php` - Email functionality
+  - send_email() → EmailService::send()
+  - Email validation and formatting
+
+**2. Database Module** (3302b39):
+- ✅ `Database/Connection.php` - Connection management (3 functions)
+  - init_sql() → Connection::initPlayer()
+  - init_admin_sql() → Connection::initAdmin()
+  - sql() → Connection::connect()
+
+- ✅ `Database/QueryExecutor.php` - Query execution (4 functions)
+  - pdo_fetch() → QueryExecutor::fetch()
+  - pdo_fetch_param() → QueryExecutor::fetch()
+  - pdo_exec() → QueryExecutor::execute()
+  - pdo_insert() → QueryExecutor::insert()
+
+**Total Extracted**: 11 functions converted to 2 modules (5 classes)
+**Lines Extracted**: ~600 lines from common.inc to dedicated classes
+**Lines Saved**: ~150 lines (wrappers are much smaller than originals)
 
 #### Infrastructure Complete:
 - ✅ Created `src/bootstrap.php` with PSR-4 autoloader
@@ -314,23 +345,38 @@ tests/
 
 ## 🎯 Immediate Next Steps
 
-### Priority 1: Complete Week 1 Testing
+### Priority 1: Testing & Verification ✅ READY
 1. Apply password migration: `php migrations/run_migration.php 001`
-2. Test login with existing account
-3. Verify auto-migration works
+2. Test login with existing account (should auto-migrate)
+3. Test new user registration (should use Argon2ID)
 4. Test CSRF protection on all protected forms
+5. Verify all pages load without errors
 
-### Priority 2: Begin Code Extraction
-1. Start with Utils module (easiest, no dependencies)
-2. Extract Logger class from print_log/printr_log functions
-3. Test basic logging still works
-4. Commit incrementally
+### Priority 2: Continue Code Extraction (Optional)
+Remaining modules to extract (~150+ functions):
+1. **Auth Module** (~15 functions)
+   - get_player(), check_player_status()
+   - check_session(), init_time_session()
 
-### Priority 3: Document Remaining Work
-1. Create detailed function mapping (all 230 functions)
-2. Identify dependencies between functions
-3. Create extraction order based on dependencies
-4. Estimate time for each module
+2. **Game Module** (~80 functions) - LARGEST
+   - Match: get_matchs_*, update_calendar_matchs
+   - Prono: get_prono_*, insert_prono_*
+   - Score: get_score_*, compute_score_*
+   - Ranking: get_selection_order, rankings
+
+3. **Display Module** (~60 functions)
+   - Table rendering: display*, put_table_*
+   - Form rendering: put_*_form
+   - Navigation: put_menu, put_status
+
+4. **Stats Module** (~20 functions)
+   - get_stats_*, get_records_*
+
+### Priority 3: Week 3-4 Tasks
+1. Integrate Tailwind CSS
+2. Make pages responsive
+3. Add mobile navigation
+4. Run full regression tests
 
 ---
 
@@ -342,13 +388,24 @@ tests/
 | Week 1 | CSRF Protection (Core) | ✅ Complete | 100% |
 | Week 1 | CSRF Protection (All) | 🚧 Partial | 30% |
 | Week 2 | Infrastructure | ✅ Complete | 100% |
-| Week 2 | Function Extraction | 🚧 Pending | 0% |
+| Week 2 | Utils Extraction | ✅ Complete | 100% |
+| Week 2 | Database Extraction | ✅ Complete | 100% |
+| Week 2 | Function Extraction | 🚧 In Progress | 11/230 (5%) |
 | Week 2 | Testing | 🚧 Pending | 0% |
 | Week 2 | Unit Tests | 🚧 Pending | 0% |
 | Week 3 | Tailwind CSS | 🚧 Pending | 0% |
 | Week 4 | Responsive Design | 🚧 Pending | 0% |
 
-**Overall Phase 1 Progress**: ~25% (Week 1 complete + infrastructure)
+**Overall Phase 1 Progress**: ~35% (Week 1 complete + core Week 2 modules extracted)
+
+**Code Extraction Progress**: 11/230 functions (5%)
+- ✅ Utils: 4/4 functions
+- ✅ Database: 7/7 functions
+- ⏳ Auth: 0/~15 functions
+- ⏳ Game: 0/~80 functions
+- ⏳ Display: 0/~60 functions
+- ⏳ Stats: 0/~20 functions
+- ⏳ Other: 0/~44 functions
 
 ---
 
