@@ -27,6 +27,9 @@ if (file_exists($ovh_path)) {
 // Load PasswordService for modern password hashing (Phase 1, Task 1.1.1)
 require_once __DIR__ . '/src/Auth/PasswordService.php';
 
+// Load UserService for user management (Phase 1, Task 1.2.1)
+require_once __DIR__ . '/src/Auth/UserService.php';
+
 // Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
 require_once __DIR__ . '/src/Security/CsrfToken.php';
 
