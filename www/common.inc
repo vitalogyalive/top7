@@ -5726,6 +5726,13 @@ function get_monday_from_day($day, $today, $season)
 
     $query = "select date from `match` where day=$day and season=$season order by date limit 1";
     $row   = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$row || !isset($row['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning current time");
+        return time(); // Return current time as fallback
+    }
+
     $r     = explode("-", $row['date']);
     $day_w = date('w', mktime(0, 0, 0, $r[1], $r[2], $r[0])); // sunday=0, saturday=6, friday=5
     if ($day_w == 0) {
