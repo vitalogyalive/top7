@@ -4155,8 +4155,15 @@ function get_first_day_season($season)
     $day   = 1;
     $query = "select date, time from `match` ";
     $query .= "where season=$season and day >= $day limit 1";
-    $season = pdo_fetch(__FUNCTION__, c_one, $query);
-    $date   = $season['date'] . " 23:00:00";
+    $matchData = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$matchData || !isset($matchData['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for season=$season, returning current time");
+        return time(); // Return current time as fallback
+    }
+
+    $date   = $matchData['date'] . " 23:00:00";
     print_log(__FUNCTION__, "date", $date);
     print_log(__FUNCTION__,"d", strtotime($date));
     print_log(__FUNCTION__,"d", strtotime($date) - 7 * 24 * 3600);
@@ -4170,6 +4177,12 @@ function get_last_day_season($season)
     $query = "select date, time from `match` ";
     $query .= "where season=$season and day >= $day limit 1";
     $rows = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$rows || !isset($rows['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for season=$season day=$day, returning current time");
+        return time(); // Return current time as fallback
+    }
 
     $date = $rows['date'] . " 23:00:00";
     return strtotime($date);
@@ -5707,6 +5720,12 @@ function get_time_game_closed($day, $today, $season, $monday)
 
     $query = "select date, time from `match` where day=$day and season=$season order by date,time limit 1";
     $row   = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$row || !isset($row['date']) || !isset($row['time'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning time_from_season");
+        return $time_from_season; // Return the provided time as fallback
+    }
 
     $d                = explode("-", $row['date']);
     $t                = explode(":", $row['time']);
