@@ -4193,6 +4193,29 @@ function get_last_day_from_date($now, $season)
     printr_log(__FUNCTION__, "rows1", $rows1);
     printr_log(__FUNCTION__, "rows2", $rows2);
 
+    // Handle cases where queries return false (no results)
+    if (!is_array($rows1)) {
+        $rows1 = [];
+    }
+    if (!is_array($rows2)) {
+        $rows2 = [];
+    }
+
+    // If no matches found at all, return day 1 as default
+    if (empty($rows1) && empty($rows2)) {
+        printr_log(__FUNCTION__, "warning", "No matches found, returning default day 1");
+        return 1;
+    }
+
+    // If only rows2 is empty, use rows1 for both
+    if (empty($rows2) && !empty($rows1)) {
+        $rows2 = $rows1;
+    }
+    // If only rows1 is empty, use rows2 for both
+    if (empty($rows1) && !empty($rows2)) {
+        $rows1 = $rows2;
+    }
+
     if (count($rows2) == 1) {
         $rows2 = $rows1;
     }
