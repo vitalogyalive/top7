@@ -24,23 +24,23 @@ if (file_exists($ovh_path)) {
 }
 // blank page is displayed if file not found
 
-// Load PasswordService for modern password hashing (Phase 1, Task 1.1.1)
-require_once __DIR__ . '/src/Auth/PasswordService.php';
+// Load all modernized classes (Phase 1, Tasks 1.1.1 - 1.2.1)
 
-// Load UserService for user management (Phase 1, Task 1.2.1)
+// Auth classes
+require_once __DIR__ . '/src/Auth/PasswordService.php';
+require_once __DIR__ . '/src/Auth/SessionManager.php';
 require_once __DIR__ . '/src/Auth/UserService.php';
 
-// Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
+// Security classes
 require_once __DIR__ . '/src/Security/CsrfToken.php';
 
-// Load Logger for error logging (Phase 1, Task 1.2.1)
-require_once __DIR__ . '/src/Utils/Logger.php';
-
-// Load Connection for database management (Phase 1, Task 1.2.1)
+// Database classes
 require_once __DIR__ . '/src/Database/Connection.php';
-
-// Load QueryExecutor for database queries (Phase 1, Task 1.2.1)
 require_once __DIR__ . '/src/Database/QueryExecutor.php';
+
+// Utility classes
+require_once __DIR__ . '/src/Utils/Logger.php';
+require_once __DIR__ . '/src/Utils/EmailService.php';
 
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
