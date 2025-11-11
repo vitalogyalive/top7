@@ -5743,8 +5743,8 @@ function get_time_game_closed($day, $today, $season, $monday)
 
     // Handle case where no match is found
     if (!$row || !isset($row['date']) || !isset($row['time'])) {
-        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning time_from_season");
-        return $time_from_season; // Return the provided time as fallback
+        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning current time");
+        return time(); // Return current time as fallback
     }
 
     $d                = explode("-", $row['date']);

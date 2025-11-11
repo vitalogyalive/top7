@@ -20,11 +20,13 @@
 		$captcha = false;
 	}
 
-	// CSRF Protection (Phase 1, Task 1.1.2)
-	if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
-		error_log('CSRF token validation failed in login.php');
-		echo '<meta http-equiv="refresh" content="0;URL=index">';
-		exit;
+	// CSRF Protection (Phase 1, Task 1.1.2) - Only validate on POST requests
+	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+		if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
+			error_log('CSRF token validation failed in login.php');
+			echo '<meta http-equiv="refresh" content="0;URL=index">';
+			exit;
+		}
 	}
 
 	if( isset( $_POST['login']) and isset( $_POST['password'])) {
