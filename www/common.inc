@@ -3791,6 +3791,19 @@ function LNR_rank($ranks, $day, $season)
         $idx++;
     }
 
+    // Initialize criterion arrays
+    $criterion1 = [];
+    $criterion2 = [];
+    $criterion3 = [];
+    $criterion4 = [];
+    $criterion5 = [];
+    $criterion6 = [];
+    $criterion7 = [];
+    $criterion8 = [];
+    $criterion9 = [];
+    $criteriona = [];
+    $criterionb = [];
+
     foreach ($ranks2 as $k => $rank) {
         $criterion1[$k] = $rank['point']; // point terrain
         $criterion2[$k] = $rank['point_']; // point terrain sur match des équipes concernées
@@ -3804,29 +3817,33 @@ function LNR_rank($ranks, $day, $season)
         $criteriona[$k] = $rank['nem']; // nbre d'essais marqués
         $criterionb[$k] = $rank['previous_season']; // classement de la précédente saison
     }
-    array_multisort(
-        $criterion1,
-        SORT_DESC,
-        $criterion2,
-        SORT_DESC,
-        #       $criterion3, SORT_DESC,
-        #       $criterion4, SORT_ASC,
-        $criterion5,
-        SORT_DESC,
-        $criterion6,
-        SORT_DESC,
-        $criterion7,
-        SORT_DESC,
-        $criterion8,
-        SORT_DESC,
-        $criterion9,
-        SORT_DESC,
-        $criteriona,
-        SORT_DESC,
-        $criterionb,
-        SORT_ASC,
-        $ranks2
-    );
+
+    // Only sort if we have data
+    if (!empty($ranks2)) {
+        array_multisort(
+            $criterion1,
+            SORT_DESC,
+            $criterion2,
+            SORT_DESC,
+            #       $criterion3, SORT_DESC,
+            #       $criterion4, SORT_ASC,
+            $criterion5,
+            SORT_DESC,
+            $criterion6,
+            SORT_DESC,
+            $criterion7,
+            SORT_DESC,
+            $criterion8,
+            SORT_DESC,
+            $criterion9,
+            SORT_DESC,
+            $criteriona,
+            SORT_DESC,
+            $criterionb,
+            SORT_ASC,
+            $ranks2
+        );
+    }
 
     return $ranks2;
 }
