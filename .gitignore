@@ -2,3 +2,5 @@
 test/mysql
 .vscode
 .gitallowed
+.idea/
+*.iml
