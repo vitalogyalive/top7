@@ -4,7 +4,14 @@
       "Bash(docker exec:*)",
       "Bash(curl:*)",
       "Bash(chmod:*)",
-      "Bash(/tmp/test_login.sh)"
+      "Bash(/tmp/test_login.sh)",
+      "Bash(pip install:*)",
+      "Bash(playwright install:*)",
+      "Bash(python3:*)",
+      "Bash(cat:*)",
+      "Bash(php --version:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(md5sum:*)"
     ],
     "deny": [],
     "ask": []

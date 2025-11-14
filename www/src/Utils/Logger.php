@@ -74,16 +74,17 @@ class Logger {
      *
      * @param string $function Function name calling the log
      * @param string $name Variable/context name
-     * @param string $msg Message to log
+     * @param string|null $msg Message to log
      */
-    public static function log(string $function, string $name, string $msg): void {
+    public static function log(string $function, string $name, ?string $msg): void {
         global $log_path; // For backward compatibility
 
         $logPath = self::$logPath ?? $log_path ?? '/tmp';
 
         // Only log if function is in debug whitelist
         if (in_array($function, self::$debugFunctions)) {
-            $log = date("Ymd G:i:s ") . $function . ' [' . $name . '] ' . $msg . PHP_EOL;
+            $msgStr = $msg ?? 'NULL';
+            $log = date("Ymd G:i:s ") . $function . ' [' . $name . '] ' . $msgStr . PHP_EOL;
             file_put_contents($logPath . '/log_' . date("Ymd") . '.txt', $log, FILE_APPEND);
         }
     }
