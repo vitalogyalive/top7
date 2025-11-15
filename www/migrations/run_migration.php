@@ -49,6 +49,8 @@ init_sql();
 global $pdo;
 
 try {
+    // Note: DDL statements (CREATE, ALTER, DROP) cause implicit commits in MySQL
+    // So transactions don't really help here, but we'll keep the structure for consistency
     $pdo->beginTransaction();
 
     foreach ($statements as $statement) {
@@ -58,7 +60,12 @@ try {
         }
     }
 
-    $pdo->commit();
+    // Only commit if transaction is still active
+    // (DDL statements cause implicit commits, so transaction may not be active)
+    if ($pdo->inTransaction()) {
+        $pdo->commit();
+    }
+
     echo "\n✓ Migration completed successfully!\n";
     echo "\nNext steps:\n";
     echo "1. Verify the migration: SELECT * FROM player LIMIT 1;\n";
@@ -66,7 +73,12 @@ try {
     echo "3. Create a new account (should use Argon2ID from the start)\n";
 
 } catch (PDOException $e) {
-    $pdo->rollBack();
+    // Only rollback if transaction is still active
+    // (DDL statements cause implicit commits, so transaction may not be active)
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     echo "\n✗ Migration failed: " . $e->getMessage() . "\n";
+    echo "Error Code: " . $e->getCode() . "\n";
     exit(1);
 }

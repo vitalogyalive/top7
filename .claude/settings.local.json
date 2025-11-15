@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(/tmp/test_login.sh)",
+      "Bash(pip install:*)",
+      "Bash(playwright install:*)",
+      "Bash(python3:*)",
+      "Bash(cat:*)",
+      "Bash(php --version:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(md5sum:*)",
+      "Bash(php verify_password_hash.php:*)",
+      "Bash(docker ps:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

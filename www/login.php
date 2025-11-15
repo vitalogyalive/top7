@@ -2,6 +2,9 @@
 
 	include("common.inc");
 
+	// Start session FIRST - before accessing $_SESSION
+	session_start();
+
 	printr_log("login.php", "_POST", $_POST);
 	printr_log("login.php", "_SESSION", $_SESSION);
 
@@ -16,15 +19,14 @@
 	} else {
 		$captcha = false;
 	}
-	
 
-	session_start();
-
-	// CSRF Protection (Phase 1, Task 1.1.2)
-	if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
-		error_log('CSRF token validation failed in login.php');
-		echo '<meta http-equiv="refresh" content="0;URL=index">';
-		exit;
+	// CSRF Protection (Phase 1, Task 1.1.2) - Only validate on POST requests
+	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+		if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
+			error_log('CSRF token validation failed in login.php');
+			echo '<meta http-equiv="refresh" content="0;URL=index">';
+			exit;
+		}
 	}
 
 	if( isset( $_POST['login']) and isset( $_POST['password'])) {
@@ -32,7 +34,6 @@
 
 			if( $_POST['login'] == c_admin_login and $_POST['password'] == c_admin_password) {
 
-				session_start();
 				init_sql();
 				init_time_session();
 				$_SESSION['login'] 		= $_POST['login'];
@@ -46,7 +47,6 @@
 
 			if( $player = check_player( $_POST)) {
 
-				session_start();
 				init_time_session();
 				$_SESSION['login'] 	    = $player['email'];
 				$_SESSION['pseudo'] 	= $player['pseudo'];

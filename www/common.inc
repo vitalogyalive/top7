@@ -24,11 +24,23 @@ if (file_exists($ovh_path)) {
 }
 // blank page is displayed if file not found
 
-// Load PasswordService for modern password hashing (Phase 1, Task 1.1.1)
-require_once __DIR__ . '/src/Auth/PasswordService.php';
+// Load all modernized classes (Phase 1, Tasks 1.1.1 - 1.2.1)
 
-// Load CsrfToken for CSRF protection (Phase 1, Task 1.1.2)
+// Auth classes
+require_once __DIR__ . '/src/Auth/PasswordService.php';
+require_once __DIR__ . '/src/Auth/SessionManager.php';
+require_once __DIR__ . '/src/Auth/UserService.php';
+
+// Security classes
 require_once __DIR__ . '/src/Security/CsrfToken.php';
+
+// Database classes
+require_once __DIR__ . '/src/Database/Connection.php';
+require_once __DIR__ . '/src/Database/QueryExecutor.php';
+
+// Utility classes
+require_once __DIR__ . '/src/Utils/Logger.php';
+require_once __DIR__ . '/src/Utils/EmailService.php';
 
 // PDO SQL : pdo_fetch()
 define("c_none", 0);
@@ -255,6 +267,49 @@ $f_debugs = array(
     "register_same_top7team");
 
 /**
+ * Replacement for deprecated format_date_locale() function
+ * @param string $format strftime format string
+ * @param int $timestamp Unix timestamp
+ * @return string Formatted date string
+ */
+function format_date_locale($format, $timestamp) {
+    // Handle null or empty format
+    if ($format === null || $format === '') {
+        return '';
+    }
+
+    // Map common strftime formats to date() formats
+    $format_map = [
+        '%Y' => 'Y',    // 4-digit year
+        '%y' => 'y',    // 2-digit year
+        '%m' => 'm',    // Month number
+        '%d' => 'd',    // Day of month
+        '%H' => 'H',    // Hour 24-hour
+        '%M' => 'i',    // Minutes
+        '%S' => 's',    // Seconds
+        '%A' => 'l',    // Full weekday name
+        '%a' => 'D',    // Short weekday name
+        '%B' => 'F',    // Full month name
+        '%b' => 'M',    // Short month name
+    ];
+
+    $date_format = str_replace(array_keys($format_map), array_values($format_map), $format);
+    return date($date_format, $timestamp);
+}
+
+/**
+ * Replacement for deprecated utf8_encode() function
+ * @param string $string String to encode
+ * @return string UTF-8 encoded string
+ */
+function utf8_encode_safe($string) {
+    if (function_exists('mb_convert_encoding')) {
+        return mb_convert_encoding($string, 'UTF-8', 'ISO-8859-1');
+    }
+    return utf8_encode($string); // Fallback for older PHP
+}
+
+/**
  * Print version info - Legacy wrapper for Logger::printVersion()
  * @deprecated Use \Top7\Utils\Logger::printVersion() instead
  */
@@ -396,7 +451,8 @@ function error($function, $line)
  */
 function init_sql()
 {
-    \Top7\Database\Connection::initPlayer();
+    global $pdo;
+    $pdo = \Top7\Database\Connection::initPlayer();
     #error_reporting(E_ALL);
     #ini_set('display_errors', 1);
 }
@@ -407,7 +463,8 @@ function init_sql()
  */
 function init_admin_sql()
 {
-    \Top7\Database\Connection::initAdmin();
+    global $pdo;
+    $pdo = \Top7\Database\Connection::initAdmin();
 }
 
 /**
@@ -442,9 +499,9 @@ function pdo_fetch($function, $mode, $query)
  * Execute database query - Legacy wrapper for QueryExecutor::execute()
  * @deprecated Use \Top7\Database\QueryExecutor::execute() instead
  */
-function pdo_exec($function, $query)
+function pdo_exec($function, $query, $params = null)
 {
-    \Top7\Database\QueryExecutor::execute($function, $query);
+    \Top7\Database\QueryExecutor::execute($function, $query, $params);
 }
 
 /**
@@ -1035,7 +1092,7 @@ function get_selection_order($p)
     $style = "background-color: #FAFAE0; color: green; text-align: center;";
     $ret .= "<tr><th colspan=\"2\" style=\"$style\">$title - $status</th></tr>\n";
     $format   = "%A %d %b %H:%M";
-    $end_game = "(Jusqu'à " . utf8_encode(strftime($format, $p['time_game_closed'])) . ")";
+    $end_game = "(Jusqu'à " . utf8_encode_safe(format_date_locale($format, $p['time_game_closed'])) . ")";
 
     // td.status
     $style1 = "background-color: #FAFAE0; color: black; text-align: center; font-weight: bold;";
@@ -1270,7 +1327,7 @@ function put_status($p)
 
         if ($status == c_msg_game_in_progress) {
             $format   = "%A %d %b %H:%M";
-            $end_game = "(Jusqu'à " . utf8_encode(strftime($format, $p['time_game_closed'])) . ")";
+            $end_game = "(Jusqu'à " . utf8_encode_safe(format_date_locale($format, $p['time_game_closed'])) . ")";
         } else {
             $end_game = "";
         }
@@ -1480,6 +1537,7 @@ function display($p)
     $title  = "";
     $left   = $right   = "";
     $action = "display";
+    $class  = "top7";  // Default class value
 
     if ($display == c_top14) {
         $class    = "top14";
@@ -1530,6 +1588,10 @@ function display($p)
     echo "<th class=\"$class\">$right</th>\n";
     echo "</tr>\n";
     echo "</table>\n";
+
+    // Initialize class variables with default values
+    $class0 = $class1 = $class2 = $class3 = "top7";
+    $span   = 3;
 
     if ($display == c_top14) {
         $class1 = $class2 = $class3 = "top14";
@@ -1642,15 +1704,15 @@ function display($p)
 
         $score1  = $match['score1'];
         $score2  = $match['score2'];
-        $v1      = $match['v1'];
-        $v2      = $match['v2'];
+        $v1      = $match['v1'] ?? false;
+        $v2      = $match['v2'] ?? false;
         $team1   = $match['team1'];
         $team2   = $match['team2'];
-        $detail1 = array("try" => $match['try1'], "bo" => $match['bo1'], "bd" => $match['bd1']);
-        $detail2 = array("try" => $match['try2'], "bo" => $match['bo2'], "bd" => $match['bd2']);
+        $detail1 = array("try" => $match['try1'] ?? 0, "bo" => $match['bo1'] ?? 0, "bd" => $match['bd1'] ?? 0);
+        $detail2 = array("try" => $match['try2'] ?? 0, "bo" => $match['bo2'] ?? 0, "bd" => $match['bd2'] ?? 0);
 
         if ($display == c_top14 or $display == c_team14 or $display == c_top7_match) {
-            $datetime = utf8_encode(strftime($strDate, strtotime($match['date'] . " " . $match['time'])));
+            $datetime = utf8_encode_safe(format_date_locale($strDate, strtotime($match['date'] . " " . $match['time'])));
             $top_day  = "";
             if ($display == c_team14 or $display == c_top7_match) {
                 if ($match['day'] > c_last_day) {
@@ -1743,6 +1805,9 @@ function display($p)
                 $player_point = "";
             }
         }
+
+        // Initialize pseudo variables to prevent undefined variable warnings
+        $pseudo1 = $pseudo2 = "";
 
         if ($display == c_top7_player) {
             if ($day > c_last_day) {
@@ -3374,31 +3439,37 @@ function display_final($p)
 
     $results    = array();
     $ranks      = get_rank7_finales($season, c_finale_day, $top7team, c_winner);
-    $results[1] = $ranks[0];
+    $results[1] = isset($ranks[0]) ? $ranks[0] : "";
 
     $ranks      = get_rank7_finales($season, c_finale_day, $top7team, c_loser);
-    $results[2] = $ranks[0];
+    $results[2] = isset($ranks[0]) ? $ranks[0] : "";
 
     $ranks = get_rank7_finales($season, c_demifinales_day, $top7team, c_loser);
-    if (count($ranks) == 1) {
+    if (count($ranks) == 0) {
+        $results[3] = "";
+        $results[4] = "";
+    } elseif (count($ranks) == 1) {
         $results[3] = "";
         $results[4] = $ranks[0];
     } else {
-        $results[3] = $ranks[0];
-        $results[4] = $ranks[1];
+        $results[3] = isset($ranks[0]) ? $ranks[0] : "";
+        $results[4] = isset($ranks[1]) ? $ranks[1] : "";
     }
 
     $ranks = get_rank7_finales($season, c_barrage_day, $top7team, c_loser);
-    if (count($ranks) == 1) {
+    if (count($ranks) == 0) {
+        $results[5] = "";
+        $results[6] = "";
+    } elseif (count($ranks) == 1) {
         $results[5] = "";
         $results[6] = $ranks[0];
     } else {
-        $results[5] = $ranks[0];
-        $results[6] = $ranks[1];
+        $results[5] = isset($ranks[0]) ? $ranks[0] : "";
+        $results[6] = isset($ranks[1]) ? $ranks[1] : "";
     }
 
     $ranks      = get_rank7(c_last_day, $top7team);
-    $results[7] = $ranks[6];
+    $results[7] = isset($ranks[6]) ? $ranks[6] : "";
 
     $class = "top7";
     foreach ($results as $idx => $player) {
@@ -3777,6 +3848,19 @@ function LNR_rank($ranks, $day, $season)
         $idx++;
     }
 
+    // Initialize criterion arrays
+    $criterion1 = [];
+    $criterion2 = [];
+    $criterion3 = [];
+    $criterion4 = [];
+    $criterion5 = [];
+    $criterion6 = [];
+    $criterion7 = [];
+    $criterion8 = [];
+    $criterion9 = [];
+    $criteriona = [];
+    $criterionb = [];
+
     foreach ($ranks2 as $k => $rank) {
         $criterion1[$k] = $rank['point']; // point terrain
         $criterion2[$k] = $rank['point_']; // point terrain sur match des équipes concernées
@@ -3790,29 +3874,33 @@ function LNR_rank($ranks, $day, $season)
         $criteriona[$k] = $rank['nem']; // nbre d'essais marqués
         $criterionb[$k] = $rank['previous_season']; // classement de la précédente saison
     }
-    array_multisort(
-        $criterion1,
-        SORT_DESC,
-        $criterion2,
-        SORT_DESC,
-        #       $criterion3, SORT_DESC,
-        #       $criterion4, SORT_ASC,
-        $criterion5,
-        SORT_DESC,
-        $criterion6,
-        SORT_DESC,
-        $criterion7,
-        SORT_DESC,
-        $criterion8,
-        SORT_DESC,
-        $criterion9,
-        SORT_DESC,
-        $criteriona,
-        SORT_DESC,
-        $criterionb,
-        SORT_ASC,
-        $ranks2
-    );
+
+    // Only sort if we have data
+    if (!empty($ranks2)) {
+        array_multisort(
+            $criterion1,
+            SORT_DESC,
+            $criterion2,
+            SORT_DESC,
+            #       $criterion3, SORT_DESC,
+            #       $criterion4, SORT_ASC,
+            $criterion5,
+            SORT_DESC,
+            $criterion6,
+            SORT_DESC,
+            $criterion7,
+            SORT_DESC,
+            $criterion8,
+            SORT_DESC,
+            $criterion9,
+            SORT_DESC,
+            $criteriona,
+            SORT_DESC,
+            $criterionb,
+            SORT_ASC,
+            $ranks2
+        );
+    }
 
     return $ranks2;
 }
@@ -4144,8 +4232,15 @@ function get_first_day_season($season)
     $day   = 1;
     $query = "select date, time from `match` ";
     $query .= "where season=$season and day >= $day limit 1";
-    $season = pdo_fetch(__FUNCTION__, c_one, $query);
-    $date   = $season['date'] . " 23:00:00";
+    $matchData = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$matchData || !isset($matchData['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for season=$season, returning current time");
+        return time(); // Return current time as fallback
+    }
+
+    $date   = $matchData['date'] . " 23:00:00";
     print_log(__FUNCTION__, "date", $date);
     print_log(__FUNCTION__,"d", strtotime($date));
     print_log(__FUNCTION__,"d", strtotime($date) - 7 * 24 * 3600);
@@ -4159,6 +4254,12 @@ function get_last_day_season($season)
     $query = "select date, time from `match` ";
     $query .= "where season=$season and day >= $day limit 1";
     $rows = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$rows || !isset($rows['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for season=$season day=$day, returning current time");
+        return time(); // Return current time as fallback
+    }
 
     $date = $rows['date'] . " 23:00:00";
     return strtotime($date);
@@ -4181,6 +4282,29 @@ function get_last_day_from_date($now, $season)
 
     printr_log(__FUNCTION__, "rows1", $rows1);
     printr_log(__FUNCTION__, "rows2", $rows2);
+
+    // Handle cases where queries return false (no results)
+    if (!is_array($rows1)) {
+        $rows1 = [];
+    }
+    if (!is_array($rows2)) {
+        $rows2 = [];
+    }
+
+    // If no matches found at all, return day 1 as default
+    if (empty($rows1) && empty($rows2)) {
+        printr_log(__FUNCTION__, "warning", "No matches found, returning default day 1");
+        return 1;
+    }
+
+    // If only rows2 is empty, use rows1 for both
+    if (empty($rows2) && !empty($rows1)) {
+        $rows2 = $rows1;
+    }
+    // If only rows1 is empty, use rows2 for both
+    if (empty($rows1) && !empty($rows2)) {
+        $rows1 = $rows2;
+    }
 
     if (count($rows2) == 1) {
         $rows2 = $rows1;
@@ -4717,7 +4841,7 @@ function put_login_form($token)
     $display_register_link = false;
     if ($now >= $season_start and $now < $stop_register) {
         if ($now < ($start_register - 3600*24)) {
-            echo "<div class=\"season\">Crée ton équipe dès le " . strftime("%d %B", $start_register) . " !</div>";
+            echo "<div class=\"season\">Crée ton équipe dès le " . format_date_locale("%d %B", $start_register) . " !</div>";
         } else {
             echo "<div class=\"season\">Crée ton équipe maintenant !</div>";
             $display_register_link = true;
@@ -4813,7 +4937,7 @@ function display_info_player($player, $p)
     $palmares = get_palmares_player($info['email']);
     $team     = get_top7team_name($info['team']);
     $captain  = get_top7team_captain($info['team']);
-    $date_reg = utf8_encode(strftime($strDate, strtotime($info['date_reg'])));
+    $date_reg = utf8_encode_safe(format_date_locale($strDate, strtotime($info['date_reg'])));
 
     $password = get_last_password_email($player);
 
@@ -5359,7 +5483,7 @@ function update_forum($p, $s)
     $day     = $s['day'];
     $season  = $s['season'];
     $format  = "%Y-%m-%d %H:%M";
-    $date    = strftime($format, now());
+    $date    = format_date_locale($format, now());
     $parent  = $p['parent'];
     $comment = addslashes($p['comment']);
 
@@ -5602,7 +5726,10 @@ function put_blog()
 
     foreach ($news as $new) {
         echo "<li>";
-        echo "<i>" . $new['category'][0] . " </i>\n";
+        $category = isset($new['category'][0]) ? $new['category'][0] : (isset($new['category']) && is_string($new['category']) ? $new['category'] : '');
+        if ($category) {
+            echo "<i>" . $category . " </i>\n";
+        }
         echo "<a href=\"" . $new['link'] . "\" target=\"_blank\" title=\"" . $new['description'] . "\">" . $new['title'] . "</a>\n";
         echo "<p>" . $new['description'] . "</p>";
         echo "</li>\n";
@@ -5674,6 +5801,12 @@ function get_time_game_closed($day, $today, $season, $monday)
     $query = "select date, time from `match` where day=$day and season=$season order by date,time limit 1";
     $row   = pdo_fetch(__FUNCTION__, c_one, $query);
 
+    // Handle case where no match is found
+    if (!$row || !isset($row['date']) || !isset($row['time'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning current time");
+        return time(); // Return current time as fallback
+    }
+
     $d                = explode("-", $row['date']);
     $t                = explode(":", $row['time']);
     $time_game_closed = mktime($t[0] - 1, $t[1], 0, $d[1], $d[2], $d[0]); // 1h avant le 1er match
@@ -5692,6 +5825,13 @@ function get_monday_from_day($day, $today, $season)
 
     $query = "select date from `match` where day=$day and season=$season order by date limit 1";
     $row   = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    // Handle case where no match is found
+    if (!$row || !isset($row['date'])) {
+        printr_log(__FUNCTION__, "warning", "No match found for day=$day, season=$season, returning current time");
+        return time(); // Return current time as fallback
+    }
+
     $r     = explode("-", $row['date']);
     $day_w = date('w', mktime(0, 0, 0, $r[1], $r[2], $r[0])); // sunday=0, saturday=6, friday=5
     if ($day_w == 0) {
@@ -5702,7 +5842,7 @@ function get_monday_from_day($day, $today, $season)
     #echo "day=$day, day_w=$day_w";
     #printr( $r);
     #printr( $row);
-    #echo "<pre> today:" . strftime("%Y-%m-%d %H:%M", now()) . " - monday:" . strftime( "%Y-%m-%d", $monday) . " - thursday:" . strftime( "%Y-%m-%d", $monday + c_time_game_closed) . "</pre>";
+    #echo "<pre> today:" . format_date_locale("%Y-%m-%d %H:%M", now()) . " - monday:" . format_date_locale( "%Y-%m-%d", $monday) . " - thursday:" . format_date_locale( "%Y-%m-%d", $monday + c_time_game_closed) . "</pre>";
     return $monday;
 }
 
@@ -5845,7 +5985,7 @@ function get_top7_day_selection($day, $p)
                 $status = c_can_play;
             }
 
-            $info         = "(à partir de " . utf8_encode(strftime("%A %d %b ", $deadline)) . $midi_minuit[$i % 2] . ")";
+            $info         = "(à partir de " . utf8_encode_safe(format_date_locale("%A %d %b ", $deadline)) . $midi_minuit[$i % 2] . ")";
             $selections[] = $players[$player]
                 + array("deadline" => $deadline, "prono" => $prono, "status" => $status, "info" => $info);
             $i++;
@@ -5916,7 +6056,7 @@ function get_top7_day_selection($day, $p)
                         $prono = c_played;
                     }
 
-                    $info         = "(à partir de " . utf8_encode(strftime("%A %d %b ", $deadline)) . $midi_minuit[0] . ")";
+                    $info         = "(à partir de " . utf8_encode_safe(format_date_locale("%A %d %b ", $deadline)) . $midi_minuit[0] . ")";
                     //$selections[] = $players[$player]
                     // + array("deadline" => $deadline, "prono" => $prono, "status" => $status, "info" => $info, 'idx' => $idx);
                     $selections[] = array_merge(
@@ -5941,7 +6081,7 @@ function init_time_session()
     date_default_timezone_set('Europe/Paris');
 
     $top7_season = get_top7_season();
-    print_log(__FUNCTION__, "top7_season", $top7_season);
+    printr_log(__FUNCTION__, "top7_season", $top7_season);
 
     if (isset($_SESSION['season'])) {
         $season = $_SESSION['season'];
@@ -6247,7 +6387,7 @@ function check_player($p)
         // Auto-migrate to new hash
         $new_hash = $passwordService->hash($p['password']);
         $update_query = "UPDATE player SET password_new = ? WHERE player_idx = ?";
-        pdo_exec($update_query, array($new_hash, $row['player_idx']));
+        pdo_exec(__FUNCTION__, $update_query, array($new_hash, $row['player']));
         printr_log(__FUNCTION__, "migration", "Password migrated to Argon2ID");
     }
     else {
@@ -6573,7 +6713,7 @@ function send_email_forum($p, $s)
     $player  = $s['player'];
     $day     = $s['day'];
     $format  = "%Y-%m-%d %H:%M";
-    $date    = strftime($format, now());
+    $date    = format_date_locale($format, now());
     $parent  = $p['parent'];
     $comment = $p['comment'];
     $author  = get_pseudo_from_player($player);
@@ -6782,7 +6922,7 @@ function update_register($pseudo, $email, $password)
     if ($status == c_player_waiting) {
         $status   = c_player_enable;
         $format   = "%Y-%m-%d %H:%M";
-        $date_reg = strftime($format, now());
+        $date_reg = format_date_locale($format, now());
     }
 
     printr_log(__FUNCTION__, "data", array($password_new, $status, $date_reg, $pseudo, $email));
@@ -6806,7 +6946,7 @@ function insert_new_player($pseudo, $email, $team, $captain)
 
     $status   = c_player_waiting;
     $format   = "%Y-%m-%d %H:%M";
-    $date_reg = strftime($format, now());
+    $date_reg = format_date_locale($format, now());
     $query  = "insert into player (season, pseudo, password, email, status, team, captain, date_reg) ";
     $query .= "value (:season, :pseudo, :password, :email, :status, :team,  :captain, :date_reg)";
     $data = array(
@@ -6830,7 +6970,7 @@ function insert_same_player($pseudo, $password, $email, $team, $captain)
 
     $status   = c_player_enable;
     $format   = "%Y-%m-%d %H:%M:%S";
-    $date_reg = strftime($format, now());
+    $date_reg = format_date_locale($format, now());
     $query  = "insert into player (season, pseudo, password, email, status, team, captain, date_reg) ";
     $query .= "value (:season, :pseudo, :password, :email, :status, :team,  :captain, :date_reg)";
     $data = array(
@@ -6961,8 +7101,8 @@ function display_info_team($p)
 
     $players       = get_top7team_players($top7team);
     $date_last_reg = get_info_team_date_reg($top7team);
-    #$date_reg = utf8_encode( strftime( $strDate, strtotime( $players[0]['date_reg'])));  // date_reg captain
-    $date_reg = utf8_encode(strftime($strDate, strtotime($date_last_reg['date_reg']))); // last date_reg  = tema registering
+    #$date_reg = utf8_encode( format_date_locale( $strDate, strtotime( $players[0]['date_reg'])));  // date_reg captain
+    $date_reg = utf8_encode_safe(format_date_locale($strDate, strtotime($date_last_reg['date_reg']))); // last date_reg  = tema registering
 
     $line = c_line_info;
     $div  = "";

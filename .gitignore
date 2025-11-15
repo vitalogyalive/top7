@@ -2,3 +2,7 @@
 test/mysql
 .vscode
 .gitallowed
+.idea/
+*.iml
+/node_modules/*
+/playwright_test_results/*

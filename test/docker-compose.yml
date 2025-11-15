@@ -21,6 +21,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=topseven
+      - MYSQL_USER=topseven
+      - MYSQL_PASSWORD=topseven
   myadmin:
     image: phpmyadmin/phpmyadmin
     ports:
