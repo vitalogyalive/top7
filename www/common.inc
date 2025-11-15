@@ -273,6 +273,11 @@ $f_debugs = array(
  * @return string Formatted date string
  */
 function format_date_locale($format, $timestamp) {
+    // Handle null or empty format
+    if ($format === null || $format === '') {
+        return '';
+    }
+
     // Map common strftime formats to date() formats
     $format_map = [
         '%Y' => 'Y',    // 4-digit year
@@ -1532,6 +1537,7 @@ function display($p)
     $title  = "";
     $left   = $right   = "";
     $action = "display";
+    $class  = "top7";  // Default class value
 
     if ($display == c_top14) {
         $class    = "top14";
@@ -1582,6 +1588,10 @@ function display($p)
     echo "<th class=\"$class\">$right</th>\n";
     echo "</tr>\n";
     echo "</table>\n";
+
+    // Initialize class variables with default values
+    $class0 = $class1 = $class2 = $class3 = "top7";
+    $span   = 3;
 
     if ($display == c_top14) {
         $class1 = $class2 = $class3 = "top14";
@@ -1694,12 +1704,12 @@ function display($p)
 
         $score1  = $match['score1'];
         $score2  = $match['score2'];
-        $v1      = $match['v1'];
-        $v2      = $match['v2'];
+        $v1      = $match['v1'] ?? false;
+        $v2      = $match['v2'] ?? false;
         $team1   = $match['team1'];
         $team2   = $match['team2'];
-        $detail1 = array("try" => $match['try1'], "bo" => $match['bo1'], "bd" => $match['bd1']);
-        $detail2 = array("try" => $match['try2'], "bo" => $match['bo2'], "bd" => $match['bd2']);
+        $detail1 = array("try" => $match['try1'] ?? 0, "bo" => $match['bo1'] ?? 0, "bd" => $match['bd1'] ?? 0);
+        $detail2 = array("try" => $match['try2'] ?? 0, "bo" => $match['bo2'] ?? 0, "bd" => $match['bd2'] ?? 0);
 
         if ($display == c_top14 or $display == c_team14 or $display == c_top7_match) {
             $datetime = utf8_encode_safe(format_date_locale($strDate, strtotime($match['date'] . " " . $match['time'])));
@@ -3429,31 +3439,37 @@ function display_final($p)
 
     $results    = array();
     $ranks      = get_rank7_finales($season, c_finale_day, $top7team, c_winner);
-    $results[1] = $ranks[0];
+    $results[1] = isset($ranks[0]) ? $ranks[0] : "";
 
     $ranks      = get_rank7_finales($season, c_finale_day, $top7team, c_loser);
-    $results[2] = $ranks[0];
+    $results[2] = isset($ranks[0]) ? $ranks[0] : "";
 
     $ranks = get_rank7_finales($season, c_demifinales_day, $top7team, c_loser);
-    if (count($ranks) == 1) {
+    if (count($ranks) == 0) {
+        $results[3] = "";
+        $results[4] = "";
+    } elseif (count($ranks) == 1) {
         $results[3] = "";
         $results[4] = $ranks[0];
     } else {
-        $results[3] = $ranks[0];
-        $results[4] = $ranks[1];
+        $results[3] = isset($ranks[0]) ? $ranks[0] : "";
+        $results[4] = isset($ranks[1]) ? $ranks[1] : "";
     }
 
     $ranks = get_rank7_finales($season, c_barrage_day, $top7team, c_loser);
-    if (count($ranks) == 1) {
+    if (count($ranks) == 0) {
+        $results[5] = "";
+        $results[6] = "";
+    } elseif (count($ranks) == 1) {
         $results[5] = "";
         $results[6] = $ranks[0];
     } else {
-        $results[5] = $ranks[0];
-        $results[6] = $ranks[1];
+        $results[5] = isset($ranks[0]) ? $ranks[0] : "";
+        $results[6] = isset($ranks[1]) ? $ranks[1] : "";
     }
 
     $ranks      = get_rank7(c_last_day, $top7team);
-    $results[7] = $ranks[6];
+    $results[7] = isset($ranks[6]) ? $ranks[6] : "";
 
     $class = "top7";
     foreach ($results as $idx => $player) {
