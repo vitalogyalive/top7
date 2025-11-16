@@ -1,4 +1,4 @@
-/* Modern Top7 Styles - Enhanced with Tailwind CSS */
+/* Modern Top7 Styles - Keeping Original Brand Colors */
 
 /* ===================================
    Authentication Pages (Login, Register, Password)
@@ -16,27 +16,21 @@ html.password {
 }
 
 html.login {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%),
-                url(top7_login.jpeg);
-    background-blend-mode: multiply;
+    background: url(top7_login.jpeg);
     background-size: cover;
 }
 
 html.register {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%),
-                url(top7_register.jpeg);
-    background-blend-mode: multiply;
+    background: url(top7_register.jpeg);
     background-size: cover;
 }
 
 html.password {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%),
-                url(top7_password.jpeg);
-    background-blend-mode: multiply;
+    background: url(top7_password.jpeg);
     background-size: cover;
 }
 
-/* Modern Auth Boxes */
+/* Modern Auth Boxes - Original Gray Color */
 div.loginbox1,
 div.registerbox1,
 div.registerbox2,
@@ -49,41 +43,45 @@ div.messagebox1 {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    padding: 2rem;
+    background-color: #6E6767;
     text-align: center;
+    opacity: 0.92;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    padding: 2rem;
 }
 
 div.loginbox1 {
     width: min(90vw, 530px);
     height: auto;
     max-height: 90vh;
+    min-height: 580px;
 }
 
 div.registerbox1 {
     width: min(95vw, 900px);
     height: auto;
     max-height: 90vh;
+    min-height: 680px;
     overflow-y: auto;
 }
 
 div.registerbox2 {
     width: min(90vw, 650px);
     height: auto;
-    max-height: 90vh;
+    min-height: 200px;
 }
 
 div.passwordbox1 {
     width: min(90vw, 470px);
     height: auto;
+    min-height: 300px;
 }
 
 div.passwordbox2 {
     width: min(90vw, 470px);
     height: auto;
+    min-height: 430px;
 }
 
 div.messagebox1 {
@@ -91,72 +89,68 @@ div.messagebox1 {
     height: auto;
 }
 
-/* Titles */
+/* Titles - White Text on Gray */
 div.logintitle {
     text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: clamp(2rem, 8vw, 4rem);
-    color: #1e293b;
-    font-weight: 800;
+    font-family: Verdana, sans-serif;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    color: white;
+    font-weight: bold;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 div.season {
     text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: Verdana, sans-serif;
     font-size: clamp(1.5rem, 4vw, 2rem);
-    color: #334155;
-    font-weight: 700;
+    color: white;
+    font-weight: bold;
     margin-bottom: 1rem;
 }
 
 div.season_start {
     text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: Verdana, sans-serif;
     font-size: clamp(0.875rem, 2vw, 1rem);
-    color: #64748b;
-    font-weight: 600;
+    color: white;
+    font-weight: bold;
     margin-bottom: 2rem;
 }
 
 /* Login Forms */
 div.login {
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #1e293b;
+    font-family: Verdana, sans-serif;
+    color: white;
 }
 
 h3.login {
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #1e293b;
+    font-family: Verdana, sans-serif;
+    color: white;
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: normal;
     margin-bottom: 1rem;
 }
 
 a.login {
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #667eea;
+    font-family: Verdana, sans-serif;
+    color: white;
     text-decoration: none;
     transition: all 0.2s;
 }
 
 a.login:hover {
-    color: #764ba2;
+    color: #e0e0e0;
     text-decoration: underline;
 }
 
 .warning {
-    font-family: system-ui, -apple-system, sans-serif;
-    font-weight: 600;
-    color: #dc2626;
-    background: #fee2e2;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+    color: black;
+    background: #ffcc00;
     padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border-left: 4px solid #dc2626;
+    border-radius: 6px;
     margin: 1rem 0;
 }
 
@@ -165,16 +159,16 @@ a.login:hover {
    =================================== */
 
 body.top7 {
-    background: #f8fafc;
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #1e293b;
+    background: #ebebeb;
+    font-family: Verdana, sans-serif;
+    color: black;
 }
 
 /* Footer */
 div#footer {
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 0.875rem;
-    color: #64748b;
+    font-family: Verdana, sans-serif;
+    font-size: 10pt;
+    color: #666;
     padding: 1rem;
     text-align: right;
 }
@@ -183,78 +177,73 @@ div#footer {
    Forms & Inputs
    =================================== */
 
+pre {
+    display: block;
+    font-family: monospace;
+    white-space: pre;
+    margin: 1em 0;
+    text-align: left;
+}
+
 form {
     margin: auto;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: Verdana, sans-serif;
 }
 
 input {
     text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: Verdana, sans-serif;
 }
 
 input.login {
     text-align: left;
-    border: 2px solid #e2e8f0;
-    height: auto;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
+    border: 0px solid black;
+    height: 20px;
+    padding: 10px;
+    font-size: 12px;
     width: 100%;
     max-width: 280px;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
-    background: white;
-    color: #1e293b;
-}
-
-input.login:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-radius: 4px;
 }
 
 input.error {
     text-align: left;
-    border: 2px solid #dc2626;
-    height: auto;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    background-color: #fee2e2;
-    border-radius: 0.5rem;
+    border: 0px solid black;
+    height: 20px;
+    padding: 10px;
+    font-size: 12px;
+    background-color: #ff5c33;
+    border-radius: 4px;
 }
 
 input.edit {
-    font-size: 1rem;
+    font-size: 110%;
     text-align: left;
-    padding: 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
 }
 
 /* ===================================
-   Buttons - Modern Design
+   Buttons - Original Colors with Modern Effects
    =================================== */
 
 select,
 input[type="submit"] {
-    border-radius: 0.5rem;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    font-weight: 500;
     cursor: pointer;
-    border: none;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 0px solid black;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 input[type="submit"] {
-    font-size: 1rem;
-    height: auto;
-    padding: 0.625rem 1.5rem;
+    font-size: 15px;
+    height: 30px;
     color: white;
+    font-weight: normal;
 }
 
 input[type="submit"]:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
 input[type="submit"]:active {
@@ -262,283 +251,282 @@ input[type="submit"]:active {
 }
 
 select {
-    font-size: 1rem;
-    height: auto;
-    padding: 0.625rem 1rem;
-    min-width: 150px;
+    font-size: 15px;
+    height: 30px;
+    width: 150px;
     color: white;
-    text-indent: 0;
-    background-position: right 0.5rem center;
+    text-indent: 5px;
 }
 
-/* Button Color Schemes */
+/* Button Color Schemes - Original Colors */
 #StatsButton {
-    background: linear-gradient(135deg, #0000CC, #0000FF);
+    background-color: #0000CC;
 }
 
 #StatsButton:hover,
 #StatsButton.selected {
-    background: linear-gradient(135deg, #0000FF, #3333FF);
+    background-color: blue;
 }
 
 #RecordsButton {
-    background: linear-gradient(135deg, #cc0000, #ff0000);
+    background-color: #cc0000;
 }
 
 #RecordsButton:hover,
 #RecordsButton.selected {
-    background: linear-gradient(135deg, #ff0000, #ff3333);
+    background-color: red;
 }
 
-#Rank7Button,
+#Rank7Button {
+    background-color: blue;
+}
+
+#Rank7Button:hover {
+    background-color: #0000CC;
+}
+
 #Top7PlayerSelect {
-    background: linear-gradient(135deg, #0000CC, #0000FF);
+    background-color: blue;
 }
 
-#Rank7Button:hover,
 #Top7PlayerSelect:hover {
-    background: linear-gradient(135deg, #0000FF, #3333FF);
+    background-color: #0000CC;
 }
 
-#Rank14Button,
+#Rank14Button {
+    background-color: darkblue;
+}
+
+#Rank14Button:hover {
+    background-color: #1668B8;
+}
+
 #Top14TeamSelect {
-    background: linear-gradient(135deg, #00008B, #0000CD);
+    background-color: darkblue;
 }
 
-#Rank14Button:hover,
 #Top14TeamSelect:hover {
-    background: linear-gradient(135deg, #0000CD, #1668B8);
+    background-color: #1668B8;
 }
 
 #Team7Button {
     text-align: left;
-    background: linear-gradient(135deg, #0000CC, #0000FF);
+    background-color: blue;
 }
 
 #Team7Button:hover {
-    background: linear-gradient(135deg, #ff9900, #e68a00);
+    background-color: #e68a00;
 }
 
 #PronoButton {
-    background: linear-gradient(135deg, #ff9900, #ff6600);
+    background-color: #ff9900;
     text-align: center;
-    font-weight: 600;
 }
 
 #PronoButton:hover {
-    background: linear-gradient(135deg, #ff6600, #e68a00);
+    background-color: #e68a00;
 }
 
 #ParamButton {
-    background: linear-gradient(135deg, #94a3b8, #64748b);
+    background-color: #a4a4a4;
     text-align: center;
 }
 
 #ParamButton:hover {
-    background: linear-gradient(135deg, #64748b, #475569);
+    background-color: #848484;
 }
 
-#TeamButton,
-#TeamButton1 {
-    min-width: 230px;
-    background: linear-gradient(135deg, #ff9900, #ff6600);
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
+#TeamButton {
+    width: 230px;
+    background-color: #ff9900;
+    font-weight: bold;
 }
 
 #TeamButton:hover {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
+    background-color: red;
+    font-weight: bold;
 }
 
 #TeamButton1 {
-    color: #e5e7eb;
+    width: 230px;
+    background-color: #ff9900;
+    color: lightgrey;
+    font-weight: bold;
 }
 
 #TeamButton1:hover {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
+    background-color: red;
+    font-weight: bold;
 }
 
 #PlayerButton {
     text-align: left;
+    background-color: #e68a00;
+}
+
+#PlayerButton:hover {
+    background-color: #ff9900;
+}
+
+#SubmitPlayerButton {
+    background-color: #ff9900;
+}
+
+#SubmitPlayerButton:hover {
+    background-color: #e68a00;
+}
+
+#PlayerButton2 {
+    background-color: #b2b2c5;
+}
+
+#PlayerButton2:hover {
+    background-color: #8e8e9e;
+}
+
+#ResetPseudo {
+    background-color: #CC0000;
+}
+
+#ResetPseudo:hover {
+    background-color: red;
+}
+
+#UpdateButton {
+    background-color: #e68a00;
+}
+
+#UpdateButton:hover {
+    background-color: #ff9900;
 }
 
 #RegisterButton {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    padding: 0.875rem 2rem;
-    font-size: 1.125rem;
-    font-weight: 600;
+    background-color: #ff9900;
 }
 
 #RegisterButton:hover {
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    background-color: #e68a00;
 }
 
 #LoginButton {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    padding: 0.875rem 2rem;
-    font-size: 1.125rem;
-    font-weight: 600;
+    background-color: #ff9900;
 }
 
 #LoginButton:hover {
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    background-color: #e68a00;
+}
+
+#EmailButton {
+    background-color: #5b5d9f;
+}
+
+#EmailButton:hover {
+    background-color: #7577b1;
 }
 
 /* ===================================
-   Tables - Modern Design
+   Tables - Original Striping Colors
    =================================== */
 
 table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     background: white;
-    border-radius: 0.75rem;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 th {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-    padding: 1rem;
+    padding: 0.75rem;
     text-align: left;
     font-size: 0.875rem;
-    font-weight: 600;
-    color: #1e293b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: bold;
 }
 
 td {
-    padding: 0.875rem 1rem;
-    font-size: 0.9375rem;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
 }
 
-tr:last-child td {
-    border-bottom: none;
-}
-
-tr:hover {
-    background: #f8fafc;
-}
-
+/* Original Table Row Colors */
 tr:nth-child(odd) {
-    background: #ffffff;
+    background-color: #D8D8D8;
 }
 
 tr:nth-child(even) {
-    background: #fafaf9;
+    background-color: #FAFAE0;
 }
 
-/* ===================================
-   Typography
-   =================================== */
-
-p {
-    font-family: system-ui, -apple-system, sans-serif;
-    margin-left: 1.25rem;
-    line-height: 1.6;
-    color: #334155;
+tr:hover {
+    filter: brightness(0.95);
 }
 
-p.title {
-    text-align: center;
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    color: #1e293b;
-    margin: 2rem 0;
+/* Specific table classes */
+td.odd {
+    background-color: #D8D8D8;
 }
 
-pre {
-    display: block;
-    font-family: 'Monaco', 'Menlo', monospace;
-    white-space: pre;
-    margin: 1em 0;
-    text-align: left;
-    background: #1e293b;
-    color: #e2e8f0;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
+td.even {
+    background-color: #FAFAE0;
 }
 
-/* ===================================
-   Responsive Design
-   =================================== */
-
-@media (max-width: 768px) {
-    div.loginbox1,
-    div.registerbox1,
-    div.registerbox2,
-    div.passwordbox1,
-    div.passwordbox2,
-    div.messagebox1 {
-        width: 95vw;
-        padding: 1.5rem;
-        margin: 1rem auto;
-        position: relative;
-        top: auto;
-        bottom: auto;
-    }
-
-    div.logintitle {
-        font-size: 2rem;
-    }
-
-    table {
-        font-size: 0.875rem;
-    }
-
-    th,
-    td {
-        padding: 0.5rem;
-    }
-
-    input[type="submit"],
-    select {
-        width: 100%;
-        margin: 0.25rem 0;
-    }
-
-    #TeamButton,
-    #TeamButton1 {
-        width: 100%;
-    }
+td.odd_selected {
+    background-color: #C2C2C2;
 }
 
-/* ===================================
-   Utility Classes
-   =================================== */
-
-.text-center {
-    text-align: center;
+td.top7_odd {
+    background-color: #FAFAE0;
 }
 
-.mt-4 {
-    margin-top: 1rem;
+td.top7_even {
+    background-color: #FAFAE0;
 }
 
-.mb-4 {
-    margin-bottom: 1rem;
+td.top14_odd,
+td.top14_even,
+td.match_odd,
+td.match_even,
+td.rank_odd,
+td.game_odd,
+td.personal_odd {
+    background-color: #FAFAE0;
 }
 
-.p-4 {
-    padding: 1rem;
+td.match14_odd,
+td.match7_even,
+td.personal_even {
+    background-color: #C2C2C2;
 }
 
-.rounded {
-    border-radius: 0.5rem;
+td.match7_odd {
+    background-color: #FAFAE0;
 }
 
-.shadow {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+td.match14_even {
+    background-color: #C2C2C2;
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+td.top7 {
+    background-color: #b0e0e6;
+}
+
+td.rank_even,
+td.game_even {
+    background-color: #C2C2C2;
+}
+
+td.records_odd,
+td.records_7odd,
+td.records_14odd,
+td.stats_odd {
+    background-color: #FAFAE0;
+}
+
+td.records_even,
+td.records_7even,
+td.records_14even,
+td.stats_even {
+    background-color: #C2C2C2;
 }
 
 /* ===================================
@@ -547,8 +535,8 @@ pre {
 
 table.nav {
     background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     margin: 1rem auto;
     padding: 0.5rem;
     border: none;
@@ -556,15 +544,17 @@ table.nav {
 
 table.nav tr {
     border: none;
+    background: transparent !important;
 }
 
 table.nav tr:hover {
-    background: transparent;
+    background: transparent !important;
 }
 
 td.nav {
     padding: 0.25rem;
     border: none;
+    background: transparent !important;
 }
 
 table.nav form {
@@ -606,4 +596,78 @@ center {
     center {
         padding: 0.5rem;
     }
+}
+
+/* ===================================
+   Typography
+   =================================== */
+
+p {
+    font-family: Verdana, sans-serif;
+    margin-left: 20px;
+}
+
+p.title {
+    text-align: center;
+    font-family: Verdana, sans-serif;
+    font-size: 300%;
+    font-weight: bold;
+}
+
+/* ===================================
+   Responsive Design
+   =================================== */
+
+@media (max-width: 768px) {
+    div.loginbox1,
+    div.registerbox1,
+    div.registerbox2,
+    div.passwordbox1,
+    div.passwordbox2,
+    div.messagebox1 {
+        width: 95vw;
+        padding: 1.5rem;
+        margin: 1rem auto;
+        position: relative;
+        top: auto;
+        bottom: auto;
+        min-height: auto;
+    }
+
+    div.logintitle {
+        font-size: 2rem;
+    }
+
+    table {
+        font-size: 0.75rem;
+    }
+
+    th,
+    td {
+        padding: 0.5rem;
+    }
+
+    input[type="submit"],
+    select {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+
+    #TeamButton,
+    #TeamButton1 {
+        width: 100%;
+    }
+}
+
+/* ===================================
+   Utility Classes
+   =================================== */
+
+.text-center {
+    text-align: center;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
