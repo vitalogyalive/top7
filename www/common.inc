@@ -373,6 +373,7 @@ function print_header_head($class, $utf8, $js)
 
     echo "<link rel=\"stylesheet\" href=\"styles/output.css\" type=\"text/css\">\n";
     echo "<link rel=\"stylesheet\" href=\"common.css\" type=\"text/css\">\n";
+    echo "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\" integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\">\n";
 
     echo "<script src=\"common.js\"></script>\n";
     if (($class == "register" || $class == "login") && c_prod == "ovh") {
@@ -5662,7 +5663,7 @@ function put_forum_edit_form($comment_id, $current_text)
 
     $id = "edit$comment_id";
     echo "<div class=\"newcomment\">\n";
-    echo "<a href=\"javascript:unhide('$id');\">Modifier le commentaire</a>";
+    echo "<a href=\"javascript:unhide('$id');\" class=\"edit-comment-btn\" title=\"Modifier le commentaire\"><i class=\"fas fa-edit\"></i> Modifier</a>";
     echo "</div>\n";
 
     echo "<div id=\"$id\" class=\"hidden\">\n";
