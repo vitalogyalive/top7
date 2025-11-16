@@ -371,6 +371,7 @@ function print_header_head($class, $utf8, $js)
     // http://realfavicongenerator.net/
     readfile(c_favicons_file);
 
+    echo "<link rel=\"stylesheet\" href=\"styles/output.css\" type=\"text/css\">\n";
     echo "<link rel=\"stylesheet\" href=\"common.css\" type=\"text/css\">\n";
 
     echo "<script src=\"common.js\"></script>\n";

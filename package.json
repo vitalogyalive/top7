@@ -1,5 +1,20 @@
 {
+  "name": "top7",
+  "version": "1.0.0",
+  "description": "Top7/Top14 Prediction Game",
+  "scripts": {
+    "build:css": "postcss www/styles/input.css -o www/styles/output.css",
+    "watch:css": "postcss www/styles/input.css -o www/styles/output.css --watch",
+    "build": "npm run build:css"
+  },
   "dependencies": {
     "@executeautomation/playwright-mcp-server": "^1.0.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.1.17"
   }
 }
