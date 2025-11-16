@@ -5492,6 +5492,30 @@ function update_forum($p, $s)
     pdo_exec(__FUNCTION__, $query);
 }
 
+function edit_forum($p, $s)
+{
+    $f = "edit_forum";
+
+    $comment_id = intval($p['comment_id']);
+    $player     = $s['player'];
+    $comment    = addslashes($p['comment']);
+
+    // First, verify that the current player owns this comment
+    $query = "select player from `forum` where idx1=$comment_id";
+    $row = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    if (!$row || $row['player'] != $player) {
+        // User doesn't own this comment, don't allow edit
+        return false;
+    }
+
+    // Update the comment
+    $query = "update `forum` set `comment`='$comment' where idx1=$comment_id";
+    pdo_exec(__FUNCTION__, $query);
+
+    return true;
+}
+
 function get_forum($p)
 {
 
@@ -5499,7 +5523,7 @@ function get_forum($p)
     $season = $p['season'];
     $team   = $p['top7team'];
 
-    $query = "select idx1, idx2, date, pseudo, comment from `forum` ";
+    $query = "select idx1, idx2, date, pseudo, comment, player from `forum` ";
     $query .= "join player on player=player_idx ";
     $query .= "where forum.team=$team and forum.day=$day and forum.season=$season ";
     $query .= "order by date ";
@@ -5527,6 +5551,7 @@ function print_forum_comment($comment)
     $text          = str_ireplace($breaks, "<br>", $text);
     $text_with_url = preg_replace('"\b(https?://\S+)"', '<a href="$1" target="_blank">$1</a>', $text);
     $parent        = $comment['idx1'];
+    $comment_owner = $comment['player'];
     $delay         = get_forum_delay(now() - strtotime($date));
     if (strlen($delay)) {
         $interval = "il y a $delay";
@@ -5537,6 +5562,12 @@ function print_forum_comment($comment)
     echo "<div class=\"forumtext\">\n";
     echo $text_with_url . "<br>\n";
     echo "&nbsp;&nbsp;&nbsp;<i>Posté par</i> $pseudo<i>, $interval.</i><br>\n";
+
+    // Show edit button if current user owns this comment
+    if (isset($_SESSION['player']) && $_SESSION['player'] == $comment_owner) {
+        put_forum_edit_form($parent, $comment['comment']);
+    }
+
     put_forum_form($parent);
     echo "</div>\n";
     echo "<hr>\n";
@@ -5600,6 +5631,37 @@ function put_forum_form($parent)
     } else {
         echo "<a href=\"javascript:unhide('$id');\">Nouveau commentaire</a>";
     }
+    echo "</div>\n";
+
+    echo "<div id=\"$id\" class=\"hidden\">\n";
+    echo "<div class=\"newcomment\">\n";
+    echo $form;
+    echo "</div>\n";
+    echo "</div>\n";
+}
+
+function put_forum_edit_form($comment_id, $current_text)
+{
+    if ($_SESSION['season'] < $_SESSION['top7_season']) {
+        return;
+    }
+
+    if ($_SESSION['close_forum'] < now()) {
+        return;
+    }
+
+    $action = "edit_forum";
+    $current_text_escaped = htmlspecialchars($current_text, ENT_QUOTES, 'UTF-8');
+
+    $form   = "<form id=\"EditCommentForm\" method=\"post\" action=\"$action\">\n";
+    $form .= "<textarea class=\"login\" name=\"comment\" rows=\"4\" cols=\"60\">$current_text_escaped</textarea>\n";
+    $form .= "<input type=\"submit\" id=\"CommentButton\" name=\"button\" value=\"Sauvegarder\">\n";
+    $form .= "<input type=\"hidden\" name=\"comment_id\" value=\"$comment_id\">\n";
+    $form .= "</form>\n";
+
+    $id = "edit$comment_id";
+    echo "<div class=\"newcomment\">\n";
+    echo "<a href=\"javascript:unhide('$id');\">Modifier le commentaire</a>";
     echo "</div>\n";
 
     echo "<div id=\"$id\" class=\"hidden\">\n";
