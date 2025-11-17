@@ -5518,6 +5518,33 @@ function edit_forum($p, $s)
     return true;
 }
 
+function delete_forum($p, $s)
+{
+    $f = "delete_forum";
+
+    $comment_id = intval($p['comment_id']);
+    $player     = $s['player'];
+
+    // First, verify that the current player owns this comment
+    $query = "select player from `forum` where idx1=$comment_id";
+    $row = pdo_fetch(__FUNCTION__, c_one, $query);
+
+    if (!$row || $row['player'] != $player) {
+        // User doesn't own this comment, don't allow delete
+        return false;
+    }
+
+    // Delete all child comments first (cascade delete)
+    $query = "delete from `forum` where idx2=$comment_id";
+    pdo_exec(__FUNCTION__, $query);
+
+    // Delete the comment itself
+    $query = "delete from `forum` where idx1=$comment_id";
+    pdo_exec(__FUNCTION__, $query);
+
+    return true;
+}
+
 function get_forum($p)
 {
 
@@ -5629,9 +5656,9 @@ function put_forum_form($parent)
     $id = "comment$parent";
     echo "<div class=\"newcomment\">\n";
     if ($parent) {
-        echo "<a href=\"javascript:unhide('$id');\">Repondre au commentaire</a>";
+        echo "<a href=\"javascript:unhide('$id');\" class=\"comment-action-btn\" title=\"Répondre au commentaire\"><i class=\"fas fa-reply\"></i></a>";
     } else {
-        echo "<a href=\"javascript:unhide('$id');\">Nouveau commentaire</a>";
+        echo "<a href=\"javascript:unhide('$id');\" class=\"comment-action-btn\" title=\"Nouveau commentaire\"><i class=\"fas fa-comment\"></i></a>";
     }
     echo "</div>\n";
 
@@ -5663,7 +5690,8 @@ function put_forum_edit_form($comment_id, $current_text)
 
     $id = "edit$comment_id";
     echo "<div class=\"newcomment\">\n";
-    echo "<a href=\"javascript:unhide('$id');\" class=\"edit-comment-btn\" title=\"Modifier le commentaire\"><i class=\"fas fa-edit\"></i> Modifier</a>";
+    echo "<a href=\"javascript:unhide('$id');\" class=\"comment-action-btn\" title=\"Modifier le commentaire\"><i class=\"fas fa-edit\"></i></a>";
+    echo "<a href=\"delete_forum?comment_id=$comment_id\" class=\"comment-action-btn comment-delete-btn\" title=\"Supprimer le commentaire\" onclick=\"return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');\"><i class=\"fas fa-trash-alt\"></i></a>";
     echo "</div>\n";
 
     echo "<div id=\"$id\" class=\"hidden\">\n";
