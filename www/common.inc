@@ -5099,6 +5099,15 @@ function put_player_link($p)
         echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
         echo "</form>\n";
         echo "</td>\n";
+
+        echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+        $action = "agenda";
+        $title  = "📅 AGENDA";
+        $idbutton = "AgendaButton";
+        echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+        echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+        echo "</form>\n";
+        echo "</td>\n";
     } elseif (strrpos($_SERVER['REQUEST_URI'], "records")) {
         echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
         $action = "display";
@@ -5117,6 +5126,15 @@ function put_player_link($p)
         echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
         echo "</form>\n";
         echo "</td>\n";
+
+        echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+        $action = "agenda";
+        $title  = "📅 AGENDA";
+        $idbutton = "AgendaButton";
+        echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+        echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+        echo "</form>\n";
+        echo "</td>\n";
     } else {
 
         echo "<td class=\"season_title\" align=\"center\" width=\"20%\">";
@@ -5129,6 +5147,15 @@ function put_player_link($p)
         echo "</td>\n";
     }
 
+    // Lien vers l'agenda
+    echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+    $action = "agenda";
+    $title  = "📅 AGENDA";
+    $idbutton = "AgendaButton";
+    echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+    echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+    echo "</form>\n";
+    echo "</td>\n";
 
     echo "<td align=\"right\" width=\"40%\">";
     if ($mode == c_admin) {
