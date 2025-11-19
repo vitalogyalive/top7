@@ -3,9 +3,19 @@
  * API Stats - Fournit les données JSON pour les graphiques d'évolution
  */
 
+// Suppress PHP errors from being displayed in JSON output
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// Start output buffering to catch any unwanted output
+ob_start();
+
 include("common.inc");
 check_session();
 init_sql();
+
+// Clear any buffered output (PHP warnings, etc.)
+ob_end_clean();
 
 header('Content-Type: application/json');
 
@@ -46,10 +56,20 @@ try {
  * Récupère l'évolution du joueur connecté par journée
  */
 function get_player_evolution_data($season) {
-    global $g_db;
+    global $pdo;
 
-    $player_id = $_SESSION['player_idx'];
-    $team = $_SESSION['team'];
+    $player_id = $_SESSION['player_idx'] ?? $_SESSION['player'] ?? null;
+    $team = $_SESSION['team'] ?? $_SESSION['top7team'] ?? null;
+
+    if (!$player_id) {
+        return [
+            'labels' => [],
+            'points' => [],
+            'rank' => [],
+            'player_name' => $_SESSION['pseudo'] ?? 'Unknown',
+            'error' => 'Player not found'
+        ];
+    }
 
     // Récupérer toutes les journées de la saison
     $max_day = get_last_day($season);
@@ -81,12 +101,12 @@ function get_player_evolution_data($season) {
  * Calcule les points d'un joueur jusqu'à une journée donnée
  */
 function get_player_points_at_day($player_id, $season, $day) {
-    global $g_db;
+    global $pdo;
 
     // Compter les bons pronostics jusqu'à cette journée
     $sql = "SELECT COUNT(*) as correct_pronos
             FROM prono p
-            INNER JOIN match m ON p.match = m.id
+            INNER JOIN `match` m ON p.match = m.id
             INNER JOIN score s ON s.season = m.season AND s.day = m.day
             WHERE p.player = :player_id
             AND p.season = :season
@@ -94,7 +114,7 @@ function get_player_points_at_day($player_id, $season, $day) {
             AND s.team = p.team
             AND s.V = 1";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ':player_id' => $player_id,
         ':season' => $season,
@@ -112,25 +132,26 @@ function get_player_points_at_day($player_id, $season, $day) {
  * Récupère le classement d'un joueur à une journée donnée
  */
 function get_player_rank_at_day($player_id, $season, $day, $team) {
-    global $g_db;
+    global $pdo;
 
     // Calculer le classement basé sur les points à cette journée
     $sql = "SELECT player_idx,
                    (SELECT COUNT(*)
                     FROM prono p2
-                    INNER JOIN match m2 ON p2.match = m2.id
+                    INNER JOIN `match` m2 ON p2.match = m2.id
                     INNER JOIN score s2 ON s2.season = m2.season AND s2.day = m2.day AND s2.team = p2.team
                     WHERE p2.player = player.player_idx
-                    AND p2.season = :season
+                    AND p2.season = :season1
                     AND m2.day <= :day
                     AND s2.V = 1) as points
             FROM player
-            WHERE season = :season AND team = :team AND status = 1
+            WHERE season = :season2 AND team = :team AND status = 1
             ORDER BY points DESC";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        ':season' => $season,
+        ':season1' => $season,
+        ':season2' => $season,
         ':day' => $day,
         ':team' => $team
     ]);
@@ -150,7 +171,7 @@ function get_player_rank_at_day($player_id, $season, $day, $team) {
  * Récupère les données de comparaison de plusieurs joueurs
  */
 function get_players_comparison_data($season, $player_ids) {
-    global $g_db;
+    global $pdo;
 
     if (empty($player_ids)) {
         return ['error' => 'Aucun joueur sélectionné'];
@@ -171,7 +192,7 @@ function get_players_comparison_data($season, $player_ids) {
     // Pour chaque joueur
     foreach ($player_ids as $player_id) {
         // Récupérer les infos du joueur
-        $stmt = $g_db->prepare("SELECT pseudo, team FROM player WHERE player_idx = :player_id AND season = :season");
+        $stmt = $pdo->prepare("SELECT pseudo, team FROM player WHERE player_idx = :player_id AND season = :season");
         $stmt->execute([':player_id' => $player_id, ':season' => $season]);
         $player = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -197,7 +218,7 @@ function get_players_comparison_data($season, $player_ids) {
  * Récupère l'évolution d'une équipe Top7
  */
 function get_team_evolution_data($season, $team) {
-    global $g_db;
+    global $pdo;
 
     $max_day = get_last_day($season);
 
@@ -215,7 +236,7 @@ function get_team_evolution_data($season, $team) {
                     SELECT player_idx,
                            (SELECT COUNT(*)
                             FROM prono p2
-                            INNER JOIN match m2 ON p2.match = m2.id
+                            INNER JOIN `match` m2 ON p2.match = m2.id
                             INNER JOIN score s2 ON s2.season = m2.season AND s2.day = m2.day AND s2.team = p2.team
                             WHERE p2.player = player.player_idx
                             AND p2.season = :season
@@ -225,7 +246,7 @@ function get_team_evolution_data($season, $team) {
                     WHERE season = :season AND team = :team AND status = 1
                 ) as player_points";
 
-        $stmt = $g_db->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':season' => $season,
             ':day' => $day,
@@ -243,16 +264,20 @@ function get_team_evolution_data($season, $team) {
  * Récupère la liste des joueurs d'une équipe
  */
 function get_players_list($season) {
-    global $g_db;
+    global $pdo;
 
-    $team = $_SESSION['team'];
+    $team = $_SESSION['team'] ?? $_SESSION['top7team'] ?? null;
 
-    $sql = "SELECT player_idx, pseudo, point, rank
+    if (!$team) {
+        return [];
+    }
+
+    $sql = "SELECT player_idx, pseudo, point, `rank`
             FROM player
             WHERE season = :season AND team = :team AND status = 1
-            ORDER BY rank ASC";
+            ORDER BY `rank` ASC";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':season' => $season, ':team' => $team]);
 
     $players = [];

@@ -8,9 +8,9 @@ check_session();
 print_header();
 init_sql();
 
-$season = $_SESSION['season'];
-$player_name = $_SESSION['pseudo'];
-$team = $_SESSION['team'];
+$season = $_SESSION['season'] ?? null;
+$player_name = $_SESSION['pseudo'] ?? '';
+$team = $_SESSION['team'] ?? '';
 ?>
 
 <link rel="stylesheet" href="styles/output.css">
@@ -152,7 +152,7 @@ function showTab(tabName) {
     // Charger les données selon l'onglet
     if (tabName === 'personal' && !playerEvolutionData) {
         loadPersonalCharts();
-    } else if (tabName === 'comparison' && !document.querySelector('#players-checkboxes').innerHTML) {
+    } else if (tabName === 'comparison' && !document.querySelector('#players-checkboxes .player-checkbox')) {
         loadPlayersList();
     } else if (tabName === 'team' && !teamChart) {
         loadTeamChart();

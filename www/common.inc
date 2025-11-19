@@ -5042,13 +5042,13 @@ function print_table_info($title, $infos)
 function put_player_link($p)
 {
 
-    $player              = $p['player'];
-    $day                 = $p['day'];
-    $season              = $p['season'];
-    $mode                = $p['mode'];
-    $pseudo              = $p['pseudo'];
-    $captain             = $p['captain'];
-    $register_new_season = $p['register_new_season'];
+    $player              = $p['player'] ?? null;
+    $day                 = $p['day'] ?? null;
+    $season              = $p['season'] ?? null;
+    $mode                = $p['mode'] ?? null;
+    $pseudo              = $p['pseudo'] ?? '';
+    $captain             = $p['captain'] ?? null;
+    $register_new_season = $p['register_new_season'] ?? false;
 
     printr_log(__FUNCTION__, "p", $p);
     printr_log(__FUNCTION__, "get_top7_season()", get_top7_season());
@@ -9475,6 +9475,9 @@ function palmares($p)
 
 class Exaequo
 {
+    public $idx;
+    public $arr;
+
     function __construct()
     {
         $this->idx = 0;
