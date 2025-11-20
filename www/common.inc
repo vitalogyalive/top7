@@ -5042,13 +5042,13 @@ function print_table_info($title, $infos)
 function put_player_link($p)
 {
 
-    $player              = $p['player'];
-    $day                 = $p['day'];
-    $season              = $p['season'];
-    $mode                = $p['mode'];
-    $pseudo              = $p['pseudo'];
-    $captain             = $p['captain'];
-    $register_new_season = $p['register_new_season'];
+    $player              = $p['player'] ?? null;
+    $day                 = $p['day'] ?? null;
+    $season              = $p['season'] ?? null;
+    $mode                = $p['mode'] ?? null;
+    $pseudo              = $p['pseudo'] ?? '';
+    $captain             = $p['captain'] ?? null;
+    $register_new_season = $p['register_new_season'] ?? false;
 
     printr_log(__FUNCTION__, "p", $p);
     printr_log(__FUNCTION__, "get_top7_season()", get_top7_season());
@@ -5099,6 +5099,15 @@ function put_player_link($p)
         echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
         echo "</form>\n";
         echo "</td>\n";
+
+        echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+        $action = "agenda";
+        $title  = "📅 AGENDA";
+        $idbutton = "AgendaButton";
+        echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+        echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+        echo "</form>\n";
+        echo "</td>\n";
     } elseif (strrpos($_SERVER['REQUEST_URI'], "records")) {
         echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
         $action = "display";
@@ -5117,6 +5126,15 @@ function put_player_link($p)
         echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
         echo "</form>\n";
         echo "</td>\n";
+
+        echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+        $action = "agenda";
+        $title  = "📅 AGENDA";
+        $idbutton = "AgendaButton";
+        echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+        echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+        echo "</form>\n";
+        echo "</td>\n";
     } else {
 
         echo "<td class=\"season_title\" align=\"center\" width=\"20%\">";
@@ -5129,6 +5147,15 @@ function put_player_link($p)
         echo "</td>\n";
     }
 
+    // Lien vers l'agenda
+    echo "<td class=\"season_title\" align=\"center\" width=\"10%\">";
+    $action = "agenda";
+    $title  = "📅 AGENDA";
+    $idbutton = "AgendaButton";
+    echo "<form id=\"form_agenda\" action=\"$action\" method=\"post\">\n";
+    echo "<input type=\"submit\" id=\"$idbutton\" class=\"selected\" value=\"$title\">\n";
+    echo "</form>\n";
+    echo "</td>\n";
 
     echo "<td align=\"right\" width=\"40%\">";
     if ($mode == c_admin) {
@@ -7234,8 +7261,12 @@ function display_info_team($p)
 
         if ($player['status'] == c_player_waiting) {
             $password = get_last_password_email($player['player_idx']);
-            $delay    = get_forum_delay(now() - $password['time']);
-            $status   = "[" . $player_status[$player['status']] . ", depuis $delay]";
+            if ($password !== false) {
+                $delay    = get_forum_delay(now() - $password['time']);
+                $status   = "[" . $player_status[$player['status']] . ", depuis $delay]";
+            } else {
+                $status   = "[" . $player_status[$player['status']] . "]";
+            }
         }
         if ($i) {
             $title = "Joueur ($j) $status";
@@ -9348,7 +9379,6 @@ function get_palmares($season)
     $query .= "and team_player.season < $season ";
     $query .= "and team_player.season <> " . c_canceled_season . " ";
     $query .= "and player.rankFinal = 1 ";
-    $query .= "group by team_player.team_idx ";
     $query .= "order by season.Id";
     return pdo_fetch(__FUNCTION__, c_all, $query);
 }
@@ -9448,6 +9478,9 @@ function palmares($p)
 
 class Exaequo
 {
+    public $idx;
+    public $arr;
+
     function __construct()
     {
         $this->idx = 0;
