@@ -10,8 +10,8 @@ init_sql();
 
 $season = $_SESSION['season'];
 $player_name = $_SESSION['pseudo'];
-$player_id = $_SESSION['player_idx'];
-$team = $_SESSION['team'];
+$player_id = $_SESSION['player']; // player, not player_idx in session
+$team = $_SESSION['top7team']; // top7team, not team in session
 $is_captain = $_SESSION['captain'] ?? 0;
 ?>
 

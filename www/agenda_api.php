@@ -10,8 +10,8 @@ init_sql();
 header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
-$player_id = $_SESSION['player_idx'];
-$team = $_SESSION['team'];
+$player_id = $_SESSION['player']; // player, not player_idx in session
+$team = $_SESSION['top7team']; // top7team, not team in session
 $season = $_SESSION['season'];
 
 try {
@@ -77,7 +77,7 @@ try {
  * Liste les événements d'une équipe pour un mois donné
  */
 function list_events($team, $month) {
-    global $g_db;
+    global $pdo;
 
     $start_date = $month . '-01';
     $end_date = date('Y-m-t', strtotime($start_date));
@@ -99,7 +99,7 @@ function list_events($team, $month) {
             AND e.status != 'cancelled'
             ORDER BY e.proposed_date ASC";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ':team' => $team,
         ':start_date' => $start_date,
@@ -118,7 +118,7 @@ function list_events($team, $month) {
  * Récupère les détails d'un événement avec les disponibilités
  */
 function get_event_details($event_id, $team) {
-    global $g_db, $player_id;
+    global $pdo, $player_id;
 
     // Vérifier que l'événement appartient à l'équipe
     $sql = "SELECT e.*,
@@ -128,7 +128,7 @@ function get_event_details($event_id, $team) {
             INNER JOIN player p ON e.created_by = p.player_idx
             WHERE e.id = :event_id AND e.team = :team";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':event_id' => $event_id, ':team' => $team]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -151,7 +151,7 @@ function get_event_details($event_id, $team) {
                 END,
                 p.pseudo ASC";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':event_id' => $event_id]);
 
     $availabilities = [];
@@ -174,7 +174,7 @@ function get_event_details($event_id, $team) {
  * Crée un nouvel événement
  */
 function create_event($data, $player_id, $team) {
-    global $g_db;
+    global $pdo;
 
     // Validation
     if (empty($data['title'])) {
@@ -197,7 +197,7 @@ function create_event($data, $player_id, $team) {
     $sql = "INSERT INTO event (team, created_by, title, description, type, proposed_date, location, min_players)
             VALUES (:team, :created_by, :title, :description, :type, :proposed_date, :location, :min_players)";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
         ':team' => $team,
         ':created_by' => $player_id,
@@ -213,7 +213,7 @@ function create_event($data, $player_id, $team) {
         throw new Exception('Erreur lors de la création de l\'événement');
     }
 
-    $event_id = $g_db->lastInsertId();
+    $event_id = $pdo->lastInsertId();
 
     // Le créateur est automatiquement disponible
     set_availability($event_id, $player_id, 'available', 'Créateur de l\'événement');
@@ -225,10 +225,10 @@ function create_event($data, $player_id, $team) {
  * Met à jour un événement
  */
 function update_event($event_id, $data, $player_id, $team) {
-    global $g_db;
+    global $pdo;
 
     // Vérifier que le joueur est le créateur
-    $stmt = $g_db->prepare("SELECT created_by FROM event WHERE id = :id AND team = :team");
+    $stmt = $pdo->prepare("SELECT created_by FROM event WHERE id = :id AND team = :team");
     $stmt->execute([':id' => $event_id, ':team' => $team]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -277,7 +277,7 @@ function update_event($event_id, $data, $player_id, $team) {
     }
 
     $sql = "UPDATE event SET " . implode(', ', $fields) . " WHERE id = :id";
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
     return ['success' => true, 'message' => 'Événement mis à jour'];
@@ -287,10 +287,10 @@ function update_event($event_id, $data, $player_id, $team) {
  * Supprime un événement
  */
 function delete_event($event_id, $player_id, $team) {
-    global $g_db;
+    global $pdo;
 
     // Vérifier que le joueur est le créateur
-    $stmt = $g_db->prepare("SELECT created_by FROM event WHERE id = :id AND team = :team");
+    $stmt = $pdo->prepare("SELECT created_by FROM event WHERE id = :id AND team = :team");
     $stmt->execute([':id' => $event_id, ':team' => $team]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -303,7 +303,7 @@ function delete_event($event_id, $player_id, $team) {
     }
 
     // Supprimer l'événement (les disponibilités seront supprimées via CASCADE)
-    $stmt = $g_db->prepare("DELETE FROM event WHERE id = :id");
+    $stmt = $pdo->prepare("DELETE FROM event WHERE id = :id");
     $stmt->execute([':id' => $event_id]);
 
     return ['success' => true, 'message' => 'Événement supprimé'];
@@ -313,10 +313,10 @@ function delete_event($event_id, $player_id, $team) {
  * Définit ou met à jour la disponibilité d'un joueur
  */
 function set_availability($event_id, $player_id, $status, $comment = '') {
-    global $g_db;
+    global $pdo;
 
     // Vérifier que l'événement existe
-    $stmt = $g_db->prepare("SELECT id FROM event WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT id FROM event WHERE id = :id");
     $stmt->execute([':id' => $event_id]);
     if (!$stmt->fetch()) {
         throw new Exception('Événement non trouvé');
@@ -333,7 +333,7 @@ function set_availability($event_id, $player_id, $status, $comment = '') {
             VALUES (:event_id, :player_id, :status, :comment)
             ON DUPLICATE KEY UPDATE status = :status, comment = :comment";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([
         ':event_id' => $event_id,
         ':player_id' => $player_id,
@@ -351,7 +351,7 @@ function set_availability($event_id, $player_id, $status, $comment = '') {
  * Récupère les statistiques de disponibilité pour un événement
  */
 function get_availability_stats($event_id) {
-    global $g_db;
+    global $pdo;
 
     $sql = "SELECT
                 COUNT(CASE WHEN status = 'available' THEN 1 END) as available,
@@ -361,7 +361,7 @@ function get_availability_stats($event_id) {
             FROM event_availability
             WHERE event_id = :event_id";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':event_id' => $event_id]);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -372,7 +372,7 @@ function get_availability_stats($event_id) {
  * Vérifie si un événement doit être confirmé automatiquement
  */
 function check_auto_confirm($event_id) {
-    global $g_db;
+    global $pdo;
 
     $sql = "SELECT e.min_players, e.status,
                    COUNT(CASE WHEN ea.status = 'available' THEN 1 END) as available_count
@@ -381,13 +381,13 @@ function check_auto_confirm($event_id) {
             WHERE e.id = :event_id
             GROUP BY e.id";
 
-    $stmt = $g_db->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([':event_id' => $event_id]);
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($event && $event['status'] == 'proposed' && $event['available_count'] >= $event['min_players']) {
         // Confirmer automatiquement
-        $stmt = $g_db->prepare("UPDATE event SET status = 'confirmed' WHERE id = :event_id");
+        $stmt = $pdo->prepare("UPDATE event SET status = 'confirmed' WHERE id = :event_id");
         $stmt->execute([':event_id' => $event_id]);
     }
 }

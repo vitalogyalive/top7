@@ -7261,8 +7261,12 @@ function display_info_team($p)
 
         if ($player['status'] == c_player_waiting) {
             $password = get_last_password_email($player['player_idx']);
-            $delay    = get_forum_delay(now() - $password['time']);
-            $status   = "[" . $player_status[$player['status']] . ", depuis $delay]";
+            if ($password !== false) {
+                $delay    = get_forum_delay(now() - $password['time']);
+                $status   = "[" . $player_status[$player['status']] . ", depuis $delay]";
+            } else {
+                $status   = "[" . $player_status[$player['status']] . "]";
+            }
         }
         if ($i) {
             $title = "Joueur ($j) $status";
@@ -9375,7 +9379,6 @@ function get_palmares($season)
     $query .= "and team_player.season < $season ";
     $query .= "and team_player.season <> " . c_canceled_season . " ";
     $query .= "and player.rankFinal = 1 ";
-    $query .= "group by team_player.team_idx ";
     $query .= "order by season.Id";
     return pdo_fetch(__FUNCTION__, c_all, $query);
 }
