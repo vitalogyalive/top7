@@ -4,6 +4,24 @@ This directory contains all automated browser tests for the TOP7 application usi
 
 ---
 
+## Directory Structure
+
+```
+tests/playwright/
+├── README.md                  # This file - comprehensive test documentation
+├── test-*.js                  # JavaScript/Node.js Playwright tests
+├── python/                    # Python Playwright tests
+│   ├── test_authenticated_playwright.py
+│   ├── test_menu_navigation_playwright.py
+│   └── ... (more Python tests)
+└── screenshots/               # Generated test screenshots and reports
+```
+
+**Companion Directories:**
+- `test-data/` (in project root) - Local setup files: Docker configs, database scripts, SQL files for test environment
+
+---
+
 ## Quick Start
 
 ```bash
@@ -224,6 +242,213 @@ node test-api-response.js
 ```bash
 node test-playwright.js
 ```
+
+---
+
+## Python Tests
+
+The `python/` directory contains Python-based Playwright tests that provide comprehensive test coverage with detailed reporting and screenshot capabilities.
+
+### Prerequisites
+
+```bash
+# Install Python Playwright
+pip install playwright
+python -m playwright install chromium
+```
+
+### Python Test Files
+
+#### `test_authenticated_playwright.py` ⭐ **Comprehensive Authenticated Test**
+**Purpose:** Complete test suite for authenticated user workflows.
+
+**What it tests:**
+- User login functionality
+- Main dashboard content after authentication
+- Key page navigation (Prono, Ranking, Team, Display pages)
+- Session information and persistence
+- Logout functionality
+- Screenshots at each step
+
+**Output:**
+- `playwright_test_results/` directory with timestamped folders
+- Multiple screenshots showing each test step
+- JSON results file with detailed test data
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_authenticated_playwright.py
+```
+
+#### `test_test2_login_playwright.py`
+**Purpose:** Login verification for test2@topseven.fr user.
+
+**What it tests:**
+- Login form submission
+- Session creation
+- Post-login navigation
+- User-specific content display
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_test2_login_playwright.py
+```
+
+#### `test_menu_navigation_playwright.py`
+**Purpose:** Tests complete menu navigation system.
+
+**What it tests:**
+- All menu items accessibility
+- Page transitions
+- Menu state after navigation
+- Error-free page loads
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_menu_navigation_playwright.py
+```
+
+#### `test_all_menus_playwright.py`
+**Purpose:** Comprehensive menu testing across the application.
+
+**What it tests:**
+- All available menus
+- Menu item visibility based on authentication
+- Menu interaction patterns
+- Navigation between menus
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_all_menus_playwright.py
+```
+
+#### `test_display_function_playwright.py`
+**Purpose:** Tests the display/visualization functions.
+
+**What it tests:**
+- Display page accessibility
+- Data visualization rendering
+- Chart and graph display
+- Export functionality
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_display_function_playwright.py
+```
+
+#### `test_topseven7_playwright.py`
+**Purpose:** Tests TopSeven7 specific features.
+
+**What it tests:**
+- Top7 ranking system
+- Score calculations
+- Player statistics
+- Leaderboard display
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_topseven7_playwright.py
+```
+
+#### `test_equipe14_playwright.py` / `test_top14_menu_playwright.py`
+**Purpose:** Tests Team 14 (Equipe 14) specific functionality.
+
+**What it tests:**
+- Team-specific pages
+- Team roster display
+- Team statistics
+- Team menu navigation
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_equipe14_playwright.py
+python3 test_top14_menu_playwright.py
+```
+
+#### `test_direct_team14_access.py`
+**Purpose:** Direct access test for Team 14 to verify v1/v2 routing fixes.
+
+**What it tests:**
+- Direct URL access to team pages
+- Version routing (v1/v2)
+- Access permissions
+- Error handling
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_direct_team14_access.py
+```
+
+#### `test_final_menu_playwright.py`
+**Purpose:** Final verification of menu system integrity.
+
+**What it tests:**
+- All menu items function correctly
+- No broken links
+- Consistent menu behavior
+- Final smoke test for navigation
+
+**Usage:**
+```bash
+cd tests/playwright/python
+python3 test_final_menu_playwright.py
+```
+
+### Python Test Output
+
+All Python tests create output in the `playwright_test_results/` directory:
+
+```
+playwright_test_results/
+├── test_authenticated_20231121_123456/
+│   ├── 01_before_login.png
+│   ├── 02_login_filled.png
+│   ├── 03_after_login.png
+│   ├── test_results.json
+│   └── ... (more screenshots)
+└── ... (more test runs)
+```
+
+### Python Test Features
+
+- **Detailed Logging:** Console output with emoji indicators (🎯 🚀 ✓ ❌)
+- **Full-Page Screenshots:** Every step captured
+- **JSON Reports:** Structured test results for CI/CD integration
+- **Error Handling:** Graceful failure with error screenshots
+- **Timestamp Organization:** Results organized by execution time
+- **Network Idle Waiting:** Ensures pages fully load before testing
+
+### Running All Python Tests
+
+To run all Python tests sequentially:
+
+```bash
+cd tests/playwright/python
+for test in test_*.py; do
+  echo "Running $test..."
+  python3 "$test"
+  echo "---"
+done
+```
+
+### Python vs JavaScript Tests
+
+| Feature | Python Tests | JavaScript Tests |
+|---------|--------------|------------------|
+| Language | Python 3 | Node.js |
+| Output | JSON + Screenshots | HTML Report + Screenshots |
+| Verbosity | High (detailed console) | Medium (summary focus) |
+| Best For | Individual feature testing | Comprehensive suite testing |
+| Screenshots | Every step | Key pages |
+| Reports | JSON structured | Interactive HTML |
 
 ---
 

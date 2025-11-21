@@ -6,7 +6,7 @@ services:
     volumes:
       - ../www:/var/www/html
       - ./conf/php.ini:/usr/local/etc/php/php.ini
-      - ../test/conf/conf.php:/var/www/html/conf/conf.php
+      - ./conf/conf.php:/var/www/html/conf/conf.php
     depends_on:
       - db
     environment:
