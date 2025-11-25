@@ -16,6 +16,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql_data:/var/lib/mysql  # Use named volume instead
+      - ./init-scripts:/docker-entrypoint-initdb.d  # Auto-initialize database on first run
     ports:
       - "3306:3306"
     environment:
