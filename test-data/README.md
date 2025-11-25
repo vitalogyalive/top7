@@ -14,11 +14,15 @@ test-data/
 │   ├── conf.php              # PHP application configuration
 │   ├── google_gtag.html      # Google Analytics tag (if used)
 │   └── php.ini               # PHP settings
+├── init-scripts/              # Automatic database initialization (NEW!)
+│   ├── 01-init-database.sh   # Auto-runs on first container startup
+│   └── sql/
+│       └── topseven.sql      # Database schema and data
 ├── topseven.sql              # Main database schema and initial data
 ├── user_db.sql               # User database schema
-├── init_db.sh                # Initialize database script
-├── create_user_db.sh         # Create user database script
-├── reinit_db.sh              # Reinitialize database (wipe and recreate)
+├── init_db.sh                # Manual: Initialize database script
+├── create_user_db.sh         # Manual: Create user database script
+├── reinit_db.sh              # Manual: Reinitialize database (wipe and recreate)
 └── crontab.txt               # Cron job configuration for scheduled tasks
 ```
 
@@ -37,12 +41,16 @@ This will:
 - Start a MySQL database container
 - Start a web server container with Apache and PHP
 - Mount your application code
-- Initialize the databases
+- **Automatically initialize the database** (on first run only)
 
-### 2. Initialize the Database
+**Note:** The database is automatically initialized on the first run using scripts in `init-scripts/`. No manual steps required!
+
+### 2. Manual Database Re-initialization (Optional)
+
+If you need to reset the database after the initial setup:
 
 ```bash
-# First time setup
+# Reinitialize with fresh data
 ./init_db.sh
 
 # Or to completely reset the database
@@ -53,6 +61,54 @@ This will:
 
 - **Web Application:** http://localhost
 - **Database:** localhost:3306 (from host)
+
+---
+
+## Automatic Database Initialization
+
+### How It Works
+
+The database is **automatically initialized** when you first run `docker-compose up`. This is accomplished through MySQL's built-in initialization mechanism:
+
+1. **On First Container Startup Only**: MySQL automatically executes scripts in `/docker-entrypoint-initdb.d/`
+2. **Initialization Scripts**: Located in `init-scripts/` directory
+3. **Automatic Execution**: The `01-init-database.sh` script runs and imports `topseven.sql`
+4. **One-Time Only**: Initialization only happens when the database volume is empty (first run)
+
+### Directory Structure
+
+```
+test-data/
+└── init-scripts/
+    ├── 01-init-database.sh    # Automatic initialization script
+    └── sql/
+        └── topseven.sql       # Database schema and data
+```
+
+### When Does Auto-Initialization Run?
+
+✅ **Runs automatically:**
+- First time running `docker-compose up`
+- After running `docker-compose down -v` (removes volumes)
+- When the MySQL data volume is empty
+
+❌ **Does NOT run:**
+- On subsequent container restarts
+- When the database already exists
+- After `docker-compose restart`
+
+### To Force Re-initialization
+
+If you need to reinitialize an existing database:
+
+```bash
+# Option 1: Remove volumes and restart (complete reset)
+docker-compose down -v
+docker-compose up -d
+
+# Option 2: Use manual scripts (database remains)
+./init_db.sh
+```
 
 ---
 
