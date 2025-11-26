@@ -3,9 +3,12 @@
  * Page Agenda - Gestion des événements et disponibilités
  */
 
-include("common.inc");
+require_once 'common.inc';
+require_once 'src/Display/PageRenderer.php';
+use Top7\Display\PageRenderer;
+
 check_session();
-print_header();
+PageRenderer::header('agenda', 'Top7 - Agenda');
 init_sql();
 
 $season = $_SESSION['season'];
@@ -14,8 +17,6 @@ $player_id = $_SESSION['player']; // player, not player_idx in session
 $team = $_SESSION['top7team']; // top7team, not team in session
 $is_captain = $_SESSION['captain'] ?? 0;
 ?>
-
-<link rel="stylesheet" href="styles/output.css">
 
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -609,5 +610,6 @@ function escapeHtml(text) {
 }
 </script>
 
-</body>
-</html>
+<?php
+PageRenderer::footer();
+?>

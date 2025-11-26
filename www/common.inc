@@ -10,17 +10,29 @@
 #require( dirname( __DIR__) . "/www/conf/conf.php");
 #require( "/var/www/html/conf/conf.php");
 
-$ovh_path    = dirname(__DIR__) . "/www/conf/conf.php";
-$docker_path = "/var/www/html/conf/conf.php";
+$conf_path = __DIR__ . "/conf/conf.php";
 
-if (file_exists($ovh_path)) {
-    require $ovh_path;
-    $log_path = __DIR__ . "/../tmp";
-} elseif (file_exists($docker_path)) {
-    require $docker_path;
-    $log_path = "/tmp";
+if (file_exists($conf_path)) {
+    require $conf_path;
 } else {
-    exit;
+    // Legacy fallbacks
+    $ovh_path    = dirname(__DIR__) . "/www/conf/conf.php";
+    $docker_path = "/var/www/html/conf/conf.php";
+    
+    if (file_exists($ovh_path)) {
+        require $ovh_path;
+    } elseif (file_exists($docker_path)) {
+        require $docker_path;
+    } else {
+        die("Configuration file not found.");
+    }
+}
+
+// Log path determination
+if (file_exists(__DIR__ . "/../tmp")) {
+    $log_path = __DIR__ . "/../tmp";
+} else {
+    $log_path = "/tmp";
 }
 // blank page is displayed if file not found
 

@@ -18,9 +18,9 @@ echo "MySQL is ready. Starting database initialization..."
 # MYSQL_USER=topseven
 # MYSQL_PASSWORD=topseven
 
-# Import the main database schema and data
-echo "Importing topseven database schema and data..."
-mysql -u root -p"${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" < /docker-entrypoint-initdb.d/sql/topseven.sql
+# Import the complete database schema and test data from old setup
+echo "Importing complete database schema and test data..."
+mysql -u root -p"${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" < /docker-entrypoint-initdb.d/sql/01-full-schema-and-data.sql
 
 echo "========================================="
 echo "Database initialization completed!"

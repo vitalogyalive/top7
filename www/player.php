@@ -1,9 +1,12 @@
 <?php
 
-	include("common.inc");
+	require_once 'common.inc';
+    require_once 'src/Display/PageRenderer.php';
+    use Top7\Display\PageRenderer;
+
    	check_session();
 
-   	print_header();
+    PageRenderer::header('top7 player', 'Top7 - Joueur');
 	init_sql();
 
 	printr_log(basename(__FILE__),"POST",$_POST);
@@ -13,11 +16,11 @@
 
 		$errors = array();
 		$min = c_min_pseudo; $max = c_max_pseudo;
-		if( strlen( $pseudo) < $min) 	$errors[] = "Le pseudo doit avoir au minimum $min caract�res";
-		if( strlen( $pseudo) > $max) 	$errors[] = "Le pseudo doit avoir au maximum $max caract�res";
+		if( strlen( $pseudo) < $min) 	$errors[] = "Le pseudo doit avoir au minimum $min caractères";
+		if( strlen( $pseudo) > $max) 	$errors[] = "Le pseudo doit avoir au maximum $max caractères";
 
         if( check_new_pseudo( $pseudo)) {
-                $errors[] = "Le pseudo <span class=\"warning\">$pseudo</span> est d�j� pris."; 
+                $errors[] = "Le pseudo <span class=\"warning\">$pseudo</span> est déjà pris."; 
         }
 
 	if( count( $errors)) {
@@ -39,7 +42,7 @@
 		init_admin_sql();
 		$errors = array();
         	if( check_syntax_email( $email)) {
-        		if( check_new_email( $email)) $errors[] = "L'adresse email est d�j� prise !";
+        		if( check_new_email( $email)) $errors[] = "L'adresse email est déjà prise !";
         	}
         	else $errors[] = "L'adresse email est invalide";
 
@@ -92,7 +95,7 @@
 		}
 	}
 
-    // renvoie email d'inscription
+    // renvoie email d\'inscription
 	if( isset( $_POST['status'])) { 
         $player = $_POST['_player'];
         $pseudo = $_POST['_pseudo'];
@@ -102,7 +105,6 @@
         $key = insert_password_player( $player);
         send_email_register( $pseudo, $email, $team, $captain, $key);
     }
-
 
 
 
@@ -121,7 +123,7 @@
 	if( $status['team'] == c_team_waiting) $game = c_not_opened;
 	if( $status['team'] == c_team_enable and $status['player'] == c_player_enable) $game = check_date_player( $_SESSION);
 	$_SESSION['game'] 	= $game;
-	if( $game == c_enable)	{
+	if( $game == c_enable) {
 		$_SESSION['mode']    = c_player;
 		$_SESSION['display'] = c_top7_player;
 	}
@@ -134,14 +136,14 @@
 
 	init_time_session();
 
-	echo "<center>\n";
+	echo "<div class=\"container mx-auto px-4 py-8 flex flex-col items-center space-y-6\">
+";
 	put_player_link( $_SESSION);
 	#put_status( $_SESSION);
 	put_nav( $_SESSION);
 	display_info_player( $player, $_SESSION);
 	put_bottom_info( $_SESSION);
-	echo "</center>\n";
+	echo "</div>\n";
 
+    PageRenderer::footer();
 ?>
-</body>
-</html>

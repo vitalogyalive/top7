@@ -3,17 +3,18 @@
  * Page des graphiques de statistiques
  */
 
-include("common.inc");
+require_once 'common.inc';
+require_once 'src/Display/PageRenderer.php';
+use Top7\Display\PageRenderer;
+
 check_session();
-print_header();
+PageRenderer::header('stats_graphs', 'Top7 - Stats Graphs');
 init_sql();
 
 $season = $_SESSION['season'] ?? null;
 $player_name = $_SESSION['pseudo'] ?? '';
 $team = $_SESSION['team'] ?? '';
 ?>
-
-<link rel="stylesheet" href="styles/output.css">
 
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -484,5 +485,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
-</body>
-</html>
+<?php
+PageRenderer::footer();
+?>

@@ -1,11 +1,14 @@
 <?php
 
 
-	include("common.inc");
+	require_once 'common.inc';
+    require_once 'src/Display/PageRenderer.php';
+    use Top7\Display\PageRenderer;
+
 	check_session();
 
 
-	print_header();
+    PageRenderer::header('top7 params', 'Top7 - Params');
 	init_sql();
 
 #echo "<pre>";print_r($_POST);echo "</pre>";
@@ -20,10 +23,10 @@
 	}
 
 
-	echo "<center>\n";
+	echo "<div class=\"container mx-auto px-4 py-8 flex flex-col items-center space-y-6\">\n";
 	params( $_SESSION);
 	echo "<br>\n";
+    echo "</div>\n";
+    
+    PageRenderer::footer();
 ?>
-</body>
-</html>
-

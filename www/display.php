@@ -1,6 +1,9 @@
 <?php
 
-	include("common.inc");
+	require_once 'common.inc';
+    require_once 'src/Display/PageRenderer.php';
+    use Top7\Display\PageRenderer;
+
 	check_session();
 
 	init_sql();
@@ -11,6 +14,7 @@
 		$alert = $_SESSION['alert'];
 		unset( $_SESSION['alert']);
 	}
+
 
 
 
@@ -49,8 +53,21 @@
 
 	session_write_close();
 
-	init_deadline();
-	echo "<center>\n";
+    // Modern Header replacement for init_deadline()
+    $bodyAttributes = '';
+    if (isset($_SESSION['deadline'])) {
+        $deadline = $_SESSION['deadline'];
+        // Ensure now() is available, it should be via common.inc
+        $t = $deadline - now();
+        if ($t > 0) {
+             $bodyAttributes = 'onload="display_c(' . $t . ');"';
+        }
+    }
+    
+    PageRenderer::header('top7 display', 'Top7 - Jeu', $bodyAttributes);
+
+	echo "<div class=\"container mx-auto px-4 py-8 flex flex-col items-center space-y-4\">
+";
 	put_player_link( $_SESSION);
 	put_status( $_SESSION);
 	put_nav( $_SESSION);
@@ -58,12 +75,9 @@
    	else display( $_SESSION);
 	put_bottom_info( $_SESSION);
 	put_forum( $_SESSION);
-	echo "</center>\n";
+	echo "</div>\n";
 
 	if( $alert) print_alert( $alert);
 	
-
+    PageRenderer::footer();
 ?>
-
-</body>
-</html>
