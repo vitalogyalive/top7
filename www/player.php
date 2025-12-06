@@ -8,7 +8,19 @@
 
 	printr_log(basename(__FILE__),"POST",$_POST);
 
+	// Helper function to validate CSRF for data modification operations
+	$csrf_valid = function() {
+		return isset($_POST['csrf_token']) && \Top7\Security\CsrfToken::validate($_POST['csrf_token']);
+	};
+
 	if( isset( $_POST['pseudo'])) {
+		// CSRF protection for pseudo update
+		if (!$csrf_valid()) {
+			error_log('CSRF validation failed in player.php (pseudo update)');
+			header('location: player');
+			exit;
+		}
+
 		$pseudo	= $_POST['pseudo'];
 
 		$errors = array();
@@ -17,7 +29,7 @@
 		if( strlen( $pseudo) > $max) 	$errors[] = "Le pseudo doit avoir au maximum $max caract�res";
 
         if( check_new_pseudo( $pseudo)) {
-                $errors[] = "Le pseudo <span class=\"warning\">$pseudo</span> est d�j� pris."; 
+                $errors[] = "Le pseudo <span class=\"warning\">$pseudo</span> est d�j� pris.";
         }
 
 	if( count( $errors)) {
@@ -33,6 +45,13 @@
 	}
 
 	if( isset( $_POST['email'])) {
+		// CSRF protection for email update
+		if (!$csrf_valid()) {
+			error_log('CSRF validation failed in player.php (email update)');
+			header('location: player');
+			exit;
+		}
+
        	$player = 0;
 		if( isset( $_POST['player'])) $player = $_POST['player'];
 		$email	= $_POST['email'];
@@ -93,7 +112,14 @@
 	}
 
     // renvoie email d'inscription
-	if( isset( $_POST['status'])) { 
+	if( isset( $_POST['status'])) {
+		// CSRF protection for resend registration email
+		if (!$csrf_valid()) {
+			error_log('CSRF validation failed in player.php (status resend)');
+			header('location: player');
+			exit;
+		}
+
         $player = $_POST['_player'];
         $pseudo = $_POST['_pseudo'];
         $email = $_POST['_email'];

@@ -9,12 +9,19 @@
 
 
 	if( isset( $_POST['team'])) {
+		// CSRF protection
+		if (!isset($_POST['csrf_token']) || !\Top7\Security\CsrfToken::validate($_POST['csrf_token'])) {
+			error_log('CSRF validation failed in team.php');
+			header('location: team');
+			exit;
+		}
+
 		$name	= $_POST['team'];
 
 		$errors = array();
 		$min = c_min_team; $max = c_max_team;
-		if( strlen( $name) < $min) 	$errors[] = "Le nom doit avoir au minimum $min caractères";
-		if( strlen( $name) > $max) 	$errors[] = "Le nom doit avoir au maximum $max caractères";
+		if( strlen( $name) < $min) 	$errors[] = "Le nom doit avoir au minimum $min caractï¿½res";
+		if( strlen( $name) > $max) 	$errors[] = "Le nom doit avoir au maximum $max caractï¿½res";
 
 		if( count( $errors)) {
 			register_message( $errors);
