@@ -29,10 +29,26 @@
 		}
 	}
 
+	// Rate Limiting - Protection against brute force attacks
+	require_once __DIR__ . '/src/Security/RateLimiter.php';
+	$clientIp = \Top7\Security\RateLimiter::getClientIp();
+	$rateCheck = \Top7\Security\RateLimiter::check('login', $clientIp, 5, 900); // 5 attempts, 15 min lockout
+
+	if (!$rateCheck['allowed']) {
+		$remainingTime = \Top7\Security\RateLimiter::formatRemainingTime($rateCheck['retry_after']);
+		error_log("Login rate limit exceeded for IP: $clientIp");
+		$_SESSION['login_error'] = "Trop de tentatives de connexion. Réessayez dans $remainingTime.";
+		echo '<meta http-equiv="refresh" content="0;URL=index">';
+		exit;
+	}
+
 	if( isset( $_POST['login']) and isset( $_POST['password'])) {
 
 
 			if( $_POST['login'] == c_admin_login and $_POST['password'] == c_admin_password) {
+
+				// Clear rate limit on successful admin login
+				\Top7\Security\RateLimiter::recordSuccess('login', $clientIp);
 
 				init_sql();
 				init_time_session();
@@ -46,6 +62,9 @@
 			}
 
 			if( $player = check_player( $_POST)) {
+
+				// Clear rate limit on successful player login
+				\Top7\Security\RateLimiter::recordSuccess('login', $clientIp);
 
 				init_time_session();
 				$_SESSION['login'] 	    = $player['email'];
@@ -97,7 +116,10 @@
 
 			}
 			else {
-				$msg = $_POST['login'] . " est inconnu au bataillon !"; 
+				// Record failed login attempt for rate limiting
+				\Top7\Security\RateLimiter::recordFailure('login', $clientIp, 5, 900);
+				$msg = $_POST['login'] . " est inconnu au bataillon !";
+				$_SESSION['login_error'] = "Identifiants incorrects.";
 	#echo "<script>alert(\"$msg\");</script>\n";
 		}
 

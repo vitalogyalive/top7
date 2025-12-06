@@ -6,3 +6,5 @@ test/mysql
 *.iml
 /node_modules/*
 /playwright_test_results/*
+vendor/
+.phpunit.cache/

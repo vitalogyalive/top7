@@ -2346,6 +2346,7 @@ function display_update_match($p)
     echo "</td>\n";
     echo "</tr>\n";
     echo "<form id=\"$name\" name=\"$name\" method=\"post\" action=\"$action\">\n";
+    echo \Top7\Security\CsrfToken::field();
     echo "<input type=\"hidden\" name=\"season\" value=\"$season\">\n";
     echo "<input type=\"hidden\" name=\"day\" value=\"$day\">\n";
     echo "<input type=\"hidden\" name=\"team1\" value=\"$team1\">\n";
@@ -2955,6 +2956,7 @@ function param_button2()
     echo "<td align=\"left\">";
     $action = "params";
     echo "<form name=\"form_param\" action=\"$action\" method=\"post\">\n";
+    echo \Top7\Security\CsrfToken::field();
     echo "<input type=\"submit\" id=\"ParamButton\" value=\"Classement saison\">\n";
     echo "<input type=\"hidden\" name=\"update\" value=\"" . c_phase_finale . "\">\n";
     echo "</form>\n";
@@ -3051,6 +3053,7 @@ function put_param_edit($id, $element)
     echo "<td class=\"params_title\">$title</td>\n";
     echo "<td class=\"params_edit\">";
     echo "<form action=\"$action\" id=\"formedit$id\" method=\"post\">\n";
+    echo \Top7\Security\CsrfToken::field();
     echo "<input type=\"text\" name=\"date\" value=\"$value\" style=\"width: 100px\" readonly=\"true\" ondblclick=\"this.readOnly='';\" onblur=\"this.readOnly='true';document.getElementById('formedit$id').submit();\"/>\n";
     echo "<input type=\"hidden\" name=\"name\" value=\"$name\">\n";
     echo "<input type=\"hidden\" name=\"section\" value=\"$section\">\n";
@@ -5675,6 +5678,7 @@ function put_forum_form($parent)
 
     $action = "update_forum";
     $form   = "<form id=\"CommentForm\" method=\"post\" action=\"$action\">\n";
+    $form .= \Top7\Security\CsrfToken::field();
     $form .= "<textarea class=\"login\" name=\"comment\" rows=\"4\" cols=\"60\" placeholder=\"Entre ton commentaire\"></textarea>\n";
     $form .= "<input type=\"submit\" id=\"CommentButton\" name=\"button\" value=\"Envoyer\">\n";
     $form .= "<input type=\"hidden\" name=\"parent\" value=\"$parent\">\n";
@@ -5710,15 +5714,21 @@ function put_forum_edit_form($comment_id, $current_text)
     $current_text_escaped = htmlspecialchars($current_text, ENT_QUOTES, 'UTF-8');
 
     $form   = "<form id=\"EditCommentForm\" method=\"post\" action=\"$action\">\n";
+    $form .= \Top7\Security\CsrfToken::field();
     $form .= "<textarea class=\"login\" name=\"comment\" rows=\"4\" cols=\"60\">$current_text_escaped</textarea>\n";
     $form .= "<input type=\"submit\" id=\"CommentButton\" name=\"button\" value=\"Sauvegarder\">\n";
     $form .= "<input type=\"hidden\" name=\"comment_id\" value=\"$comment_id\">\n";
     $form .= "</form>\n";
 
     $id = "edit$comment_id";
+    $csrf_token = \Top7\Security\CsrfToken::generate();
     echo "<div class=\"newcomment\">\n";
     echo "<a href=\"javascript:unhide('$id');\" class=\"comment-action-btn\" title=\"Modifier le commentaire\"><i class=\"fas fa-edit\"></i></a>";
-    echo "<a href=\"delete_forum?comment_id=$comment_id\" class=\"comment-action-btn comment-delete-btn\" title=\"Supprimer le commentaire\" onclick=\"return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');\"><i class=\"fas fa-trash-alt\"></i></a>";
+    echo "<form method=\"post\" action=\"delete_forum\" style=\"display:inline;\" onsubmit=\"return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');\">";
+    echo "<input type=\"hidden\" name=\"csrf_token\" value=\"" . htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') . "\">";
+    echo "<input type=\"hidden\" name=\"comment_id\" value=\"$comment_id\">";
+    echo "<button type=\"submit\" class=\"comment-action-btn comment-delete-btn\" title=\"Supprimer le commentaire\" style=\"background:none;border:none;cursor:pointer;\"><i class=\"fas fa-trash-alt\"></i></button>";
+    echo "</form>";
     echo "</div>\n";
 
     echo "<div id=\"$id\" class=\"hidden\">\n";
@@ -7124,6 +7134,7 @@ function put_line_button($element)
     echo "<td class=\"player_title\">$title</td><td class=\"player_sep\">:</td>\n";
     echo "<td class=\"player_info\" colspan=\"2\">\n";
     echo "<form action=\"$action\" method=\"post\">\n";
+    echo \Top7\Security\CsrfToken::field();
     echo "<input type=\"submit\" id=\"PlayerButton\" name=\"button\" value=\"$info\">\n";
     echo "<input type=\"hidden\" name=\"player\" value=\"$player\">\n";
     if (isset($element['season'])) {
@@ -7168,6 +7179,7 @@ function put_line_edit($id, $element)
     echo "<td class=\"player_title\">$title</td><td class=\"player_sep\">:</td>\n";
     echo "<td class=\"player_edit\">";
     echo "<form action=\"$action\" id=\"formedit$id\" method=\"post\">\n";
+    echo \Top7\Security\CsrfToken::field();
     echo "<input class=\"edit\" type=\"text\" name=\"$name\" value=\"$info\" readonly=\"true\" ondblclick=\"this.readOnly='';\" onblur=\"this.readOnly='true';document.getElementById('formedit$id').submit();\"/>\n";
     echo "<input type=\"hidden\" name=\"player\" value=\"$player\">\n";
     echo "</form>\n";
